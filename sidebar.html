@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+
+    /* Estil bàsic per a la taula */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-family: 'Arial', sans-serif;
+      font-size: 14px;      
+    }
+     
+    th, td {
+      border: 1px solid #ddd;
+      line-height: normal; /* Pot ser normal o un valor que et convingui */
+      text-align: left;
+      vertical-align: middle; /* Opcions: top, middle, bottom */
+      transition: background-color 0.3s; /* Efecte de transició */
+    }
+
+    th {
+
+      position: sticky;    /* Manté la capçalera a la part superior */
+      top: 0;              /* Posició a la qual es mantindrà fixa */
+      z-index: 10;        /* Assegura que la capçalera estigui per sobre del contingut */
+
+      background-color: #4CAF50; /* Color de fons modern */
+      padding: 10px;
+      color: white; /* Color del text a blanc */
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    td {
+      padding: 5px 9px; /* Ajusta el padding (vertical horitzontal) */
+      line-height: normal; /* Pot ser normal o un valor que et convingui */
+    }
+
+    tr:hover {
+      background-color: #f1f1f1; /* Color de fons en passar el ratolí sobre la fila */
+    }
+
+    /* Estils per al panell de càrrega */
+    #loadingOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.05);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9998;
+    }
+
+    #loadingSpinner img {
+      width: 50px;
+      height: 50px;
+    }
+
+    /* Estils per al missatge d'advertència */
+    #warningMessage {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.05);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: rgba(240, 140, 145, 0.8);
+      font-size: 18px; /* Augmenta la mida del text */
+      text-align: center;
+    }
+
+    /* Estils per als contenidors */
+    #sheetSelectContainer,
+    #selectRowsContainer,
+    #mergeTemplateContainer,
+    #tagMappingContainer {
+      height: auto;
+      padding: 10px;
+      margin: 10px 0; /* Espai entre seccions */
+    }
+    
+    #sheetSelectContainerNoButton,
+    #selectRowsContainerNoButton,
+    #tagMappingContainerNoButton {
+      height: 280px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    #headersContainer {
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    label[for="enter-number"] {
+      font-weight: bold;
+    }
+
+    #headerRowIndex {
+      width: 15%;
+      max-width: 25%;
+      margin-left: 5px;
+      border: 1px solid #ccc;
+      border-radius: 2px; 
+      text-align: center;
+    }
+
+    #keyHeaderSelect {
+      width: 95%;
+      max-width: 95%;
+      text-overflow: ellipsis; /* Mostrem "..." si el text és massa llarg */
+    }
+
+    /* Estils per als títols */
+    h2, h3 {
+      color: #333;
+      font-family: 'Arial', sans-serif;
+      margin-bottom: 10px;
+    }
+
+    /* Estils per als selectors i botons */
+    select, button {
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: 'Arial', sans-serif;
+      cursor: pointer;
+      transition: background-color 0.3s, border-color 0.3s; /* Efecte de transició */
+    }
+
+    select {
+      width: 75%; /* Fixem l'ample */
+      max-width: 75%; /* Limitem l'ample màxim */
+      white-space: nowrap; /* Evitem que el text s'enrotlli */
+      overflow: hidden; /* Ocultem qualsevol text que excedeixi l'amplada */
+    }
+
+    select:focus, button:focus {
+      outline: none; /* Elimina l'esquema de focus per defecte */
+      border-color: #4CAF50; /* Canvi de color de contorn en focus */
+    }
+
+    button {
+      background-color: #4CAF50; /* Color de fons dels botons */
+      color: white; /* Color del text */
+      border: none; /* Sense bordes per als botons */
+    }
+
+    button:hover {
+      background-color: #45a049; /* Color de fons en passar el ratolí sobre el botó */
+    }
+
+    button:active {
+      transform: translateY(2px); /* Mou el botó cap avall */
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Ombra reduïda */
+    }
+    
+    .button-container {
+      display: flex; /* Utilitza flexbox per a l'alineació */
+      justify-content: left; /* Centra els botons esq. */
+      gap: 10px; /* Espai entre els botons */
+    }
+
+    /* Estils per a les caselles de selecció */
+    .rowCheckbox {
+      width: 15px;
+      height: 15px;
+      display: flex; /* Utilitza Flexbox per centrar */
+      justify-content: center; /* Centra horitzontalment */
+    }
+</style>
+
+</head>
+<body onload="onLoadDo()">
+
+  <!-- Fons ombrejat -->
+  <div id="loadingOverlay" style="display:none;">
+    <div id="loadingSpinner">
+      <img src="https://i.gifer.com/bfR.gif" alt="loading" class="spinner" />
+    </div>
+  </div>
+
+  <div id="warningMessage">Compte! Alguna cosa no va bé.</div>
+
+
+  <div id=sheetSelectContainer style="display:none;">
+    <h2 id="sheetTitle">Selecciona una pestanya</h2>
+    <div id="sheetSelectContainerNoButton">
+      <select id="sheetSelect" onchange="onchangeSheetSelect()">
+        <option value="">--</option>
+        <!-- Aquí es substituirà per les pestanyes disponibles -->
+      </select>
+      <br><br>
+      <div id="headersContainer">
+        <label for="enter-number">#fila de capçalera:</label>
+        <input type="number" id="headerRowIndex" onchange="onchangeSheetSelect()" name="enter-number" min="1" step="1" value="1" required>
+        <select id="keyHeaderSelect" style="display:none;" onchange="onchangeKeyHeader()">
+          <!-- Aquí es substituirà per les headers disponibles -->
+        </select>
+      </div>
+    </div>
+    <br><br>
+    <button type="button" id="selectRowsBtn" onclick="onchangeKeyHeader()">
+      <i class="fas fa-arrow-right"></i> <!-- Fletxa endavant -->
+    </button>
+  </div>
+
+  <div id="selectRowsContainer" style="display:none;">
+    <h3>Selecciona files</h3>
+    <div id="selectRowsContainerNoButton">
+      <table id="selectRowsTable">
+        <thead id="selectRowsTableHead">
+        </thead>
+        <tbody id="selectRowsTableBody"></tbody>
+      </table>
+    </div>
+    <br>
+    <div class="button-container">
+      <button type="button" onclick="backToSelectSheet()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <button type="button" onclick="templateSetupVOID()">
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+  
+  <div id="mergeTemplateContainer" style="display:none;">
+    <h3>Revisa la plantilla</h3>
+    <a id="TEMPLATE_ID" style="display:none;" href="" target="_blank" onclick="event.preventDefault(); openTemplate('TEMPLATE_ID');"></a>
+    <div class="button-container">
+      <button id=">TEMPLATE_ID_BUTTON" type="button" onclick="showPicker('document')">Canvia</button>
+    </div>
+    <br>
+    <h3>Revisa el repositori</h3>
+    <a id="REPOSITORY_ID" style="display:none;" href="" target="_blank" onclick="event.preventDefault(); openTemplate('REPOSITORY_ID');"></a>
+    <div class="button-container">
+      <button id="REPOSITORY_ID_BUTTON" type="button" onclick="showPicker('folder')">Canvia</button>
+    </div>
+      <button type="button" onclick="backToSelectRows()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <button id="mergeTemplateNextButton" style="display:none;" type="button" onclick="mostrarCapcaleres()">
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+
+  <div id="tagMappingContainer" style="display:none;">
+    <h3>Mapeja</h3>
+    <div id="tagMappingContainerNoButton">
+      <table id="tagMappingTable">
+        <thead>
+          <tr>
+            <th>Tags</th>
+            <th>Capçaleres</th>
+          </tr>
+        </thead>
+        <tbody id="tagMappingTableBody"></tbody>
+      </table>
+    </div>
+    <br>
+    <div class="button-container">
+      <button type="button" onclick="backToSelectTemplate()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <button type="button" onclick="runSelectedRows()">
+        <i class="fas fa-play"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>
+
+    function onLoadDo() {
+      showWarning("Carregant ...");
+    }
+    
+    function buildSheetSelect(data) {
+      document.getElementById('loadingOverlay').style.display = 'flex';
+      var select = document.getElementById('sheetSelect');
+      data.sheets.forEach(function(sheet) {
+        var option = document.createElement('option');
+        option.value = sheet;
+        option.text = sheet;
+        if(sheet===data.selected) option.selected = true;
+        select.appendChild(option);
+      });
+      onchangeSheetSelect();
+    }
+
+    function buildKeyHeaderSelect(headers) {
+      var select = document.getElementById('keyHeaderSelect');
+      select.options.length = 0; // remove existing options
+      headers.forEach(function(header) {
+        var option = document.createElement('option');
+        option.value = header;
+        option.text = header;
+        select.appendChild(option);
+      });
+      select.style.display = "block";
+      document.getElementById("sheetSelectContainer").style.display = "block";
+      document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    function clearTagMappingTableBody() {
+      document.getElementById('tagMappingTableBody').innerHTML = '';
+    }
+
+    function clearAllTableBody() {
+      clearTagMappingTableBody();
+      document.getElementById('selectRowsTableBody').innerHTML = '';
+    }
+    
+    function onchangeSheetSelect() {
+      clearAllTableBody();
+      var selectedSheet = document.getElementById('sheetSelect').value;
+      if (selectedSheet) {
+        google.script.run.showSheet(selectedSheet);
+        const headerRowIndex = document.getElementById("headerRowIndex").value;
+        console.log("value: "+headerRowIndex);
+        google.script.run.withSuccessHandler(buildKeyHeaderSelect).carregarCapcaleres(selectedSheet,headerRowIndex);
+      }
+    }
+
+    function templateSetupVOID() {
+      templateSetup('TEMPLATE_ID');
+      templateSetup('REPOSITORY_ID');
+    }
+
+    function templateSetup(prop) {
+
+      document.getElementById('selectRowsContainer').style.display = 'none';
+      document.getElementById('mergeTemplateContainer').style.display = 'block';
+      
+      google.script.run.withSuccessHandler(function(fileData) {
+        if(fileData!='undefined') {
+          var fileData = JSON.parse(fileData);
+          document.getElementById(fileData.prop).innerHTML = fileData.name;
+          document.getElementById(fileData.prop).style.display = "block";
+          document.getElementById(fileData.prop).href = fileData.url;
+          document.getElementById('mergeTemplateNextButton').style.display = 'block';
+          clearTagMappingTableBody();
+        }
+        else {
+          document.getElementById('mergeTemplateNextButton').style.display = 'none';          
+        }
+      }).getTemplateName(prop);
+
+    }
+
+    function openTemplate(prop) {
+      var url = document.getElementById(prop).href;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    
+
+    // Funció per mostrar les capçaleres i menús desplegables
+    function mostrarCapcaleres() {
+
+      google.script.run.withSuccessHandler(function(templateId) {
+        if(templateId!='undefined') {        
+          var selectedSheet = document.getElementById('sheetSelect').value;
+          if (selectedSheet) {
+            google.script.run.showSheet(selectedSheet);
+
+            document.getElementById('mergeTemplateContainer').style.display = 'none';
+            
+            var tagMappingContainer = document.getElementById('tagMappingContainer');
+            var tagMappingTableBody = document.getElementById('tagMappingTableBody');
+
+            // Comprovar si la taula ja ha estat construïda
+            if (tagMappingTableBody.children.length === 0) {
+              // Carregar les capçaleres de la pestanya seleccionada i els tags
+              document.getElementById('loadingOverlay').style.display = 'flex';
+              document.getElementById('tagMappingContainer').style.display = 'block';
+              const headerRowIndex = document.getElementById("headerRowIndex").value;
+              google.script.run.withSuccessHandler(renderCapcaleres).carregarCapcaleres(selectedSheet,headerRowIndex);
+              google.script.run.ownMergeSetup(selectedSheet);
+            } else {
+              tagMappingContainer.style.display = 'block'; // Mostrar capçaleres
+            }
+          }
+        }
+        else {
+          showWarning("Eps! No s'ha escollit la plantilla.")
+          backToSelectTemplate();
+        }
+      }).getTemplateId('TEMPLATE_ID');
+
+    }
+
+    // Funció per mostrar les capçaleres i tags
+    function renderCapcaleres(capcaleres) {
+
+      var tbody = document.getElementById('tagMappingTableBody');
+      tbody.innerHTML = ''; // Netejar el contingut anterior
+
+      // Carregar tags
+      google.script.run.withSuccessHandler(function(tags) {
+        // Generar files per a cada tag trobat
+        tags.forEach(function(tag, index) {
+          var row = document.createElement('tr');
+
+          // Crear menú desplegable per a les capçaleres
+          var selectRight = '<select id="capcalera' + index + '">';
+          console.log("selectRight: "+selectRight);
+          selectRight += '<option value="">--</option>';  // S'ha canviat "Selecciona una capçalera" per "--"
+          capcaleres.forEach(function(capcalera) {
+            var selected = "";
+            if(tag==capcalera && selected=="") selected=" selected";
+            selectRight += '<option value="' + capcalera + '"' + selected + '>' + capcalera + '</option>';
+            console.log("selectRight += ..."+'<option value="' + capcalera + '' + selected + '">' + capcalera + '</option>');
+          });
+          selectRight += '</select>';
+
+          row.innerHTML = '<td>' + tag + '</td><td>' + selectRight + '</td>';
+          tbody.appendChild(row);
+        });
+
+        document.getElementById('loadingOverlay').style.display = 'none';
+      }).carregarTags();
+    }
+
+    // Refrescar la taula de selecció
+    function onchangeKeyHeader() {
+
+      var keyHeader = document.getElementById("keyHeaderSelect").value;
+
+      if(keyHeader!="") {
+        clearAllTableBody();
+
+        // Comprovar si és la primera vegada que es prem "Desar seleccions"
+        if (!document.getElementById('selectRowsTableBody').innerHTML) {
+          // Carregar les dades de la pestanya seleccionada i mostrar el filtre de selecció        
+          google.script.run.withSuccessHandler(mostrarSeleccio).carregarDadesPestanya(keyHeader);
+          document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        document.getElementById('sheetSelectContainer').style.display = 'none';
+        document.getElementById('selectRowsContainer').style.display = 'block';
+      }
+      else {
+        showWarning("Has d'escollir una pestanya i una capçalera.");
+      }
+      
+    }
+
+
+    // Funció per mostrar la taula amb les caselles de selecció
+    function mostrarSeleccio(keyValues) {
+
+      var keyHeader = document.getElementById("keyHeaderSelect").value;
+
+      document.getElementById('loadingOverlay').style.display = 'none';
+      var thead = document.getElementById('selectRowsTableHead');
+      thead.innerHTML = ''; // Netejar el contingut anterior
+
+      var tbody = document.getElementById('selectRowsTableBody');
+      tbody.innerHTML = ''; // Netejar el contingut anterior
+
+      // Afegir el checkbox de selecció general al capdamunt
+      var headerRow = document.createElement('tr');
+      var selectAllCheckbox = '<input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)">'; // Checkbox de selecció general
+      headerRow.innerHTML = '<th>'+keyHeader+'</th><th>' + selectAllCheckbox + '</th>';
+      thead.appendChild(headerRow);
+
+      // Afegir les files amb les dades i checkbox individuals
+      keyValues.forEach(function(fila, index) {
+        var row = document.createElement('tr');
+        var checkbox = '<input type="checkbox" class="rowCheckbox" id="select' + index + '">';
+
+        row.innerHTML = '<td>' + fila[keyHeader] + '</td><td>' + checkbox + '</td>';
+        tbody.appendChild(row);
+      });
+
+      document.getElementById('selectRowsContainer').style.display = 'block';
+    }
+
+    // Funció per seleccionar/desseleccionar totes les caselles
+    function toggleSelectAll(selectAllCheckbox) {
+      var checkboxes = document.querySelectorAll('.rowCheckbox');
+      checkboxes.forEach(function(checkbox) {
+        checkbox.checked = selectAllCheckbox.checked;
+      });
+    }
+
+
+    // Funció per processar els seleccionats
+function runSelectedRows() {
+
+  // Mostrar el fons ombrejat i la roda de processament
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  console.log("dins de runSelectedRows");
+
+  // processar files:
+  var rows = document.querySelectorAll('#selectRowsTableBody tr');
+  var numSelectedRows = 0;
+  rows.forEach(function(row, index) {
+    var checkbox = document.getElementById('select' + index);
+    if (checkbox && checkbox.checked) {
+      numSelectedRows++; // Comptem les files seleccionades
+    }
+  });
+  console.log("numSelectedRows: "+numSelectedRows);
+  showWarning("numSelectedRows: "+numSelectedRows);
+
+  if(numSelectedRows>0) {
+
+    // desar el mapeig
+    var mapatge = [];
+    var rows2 = document.querySelectorAll('#tagMappingTable tbody tr');
+    rows2.forEach(function(row, index) {
+      var tag = row.cells[0].textContent;
+      var capcalera = document.getElementById('capcalera' + index).value;
+      if (capcalera) {
+        console.log(" > capcalera: "+capcalera+" tag:"+tag);
+        mapatge.push({ capcalera: capcalera, tag: tag });
+      }
+    });
+
+    var keyHeader = document.getElementById("keyHeaderSelect").value;
+
+    var rowsProcessed = 0;
+
+    rows.forEach(function(row, index) {
+      var checkbox = document.getElementById('select' + index);
+      if (checkbox && checkbox.checked) {
+        var keyValue = row.cells[0].textContent;
+        console.log("crida a la fila de: " + keyValue);
+        /* LOG */mapatge.forEach(value => {console.log(" ** capcalera: " + value.capcalera + " tag:" + value.tag);});
+        var selectedSheet = document.getElementById('sheetSelect').value;
+
+        // Crida al servidor per processar la fila seleccionada
+        google.script.run.withSuccessHandler(function() {
+          rowsProcessed++;
+          if (rowsProcessed === numSelectedRows) {
+            document.getElementById('loadingOverlay').style.display = 'none';
+          }
+        }).mergeRow(keyValue, keyHeader, mapatge, selectedSheet);
+      }
+    });
+    //document.getElementById('loadingOverlay').style.display = 'none';
+  } else {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    showWarning("No hi ha cap fila seleccionada per processar.");
+    console.log("no hi ha files seleccionades");
+  }
+}
+
+
+
+    function backToSelectTemplate() {
+      document.getElementById('tagMappingContainer').style.display = 'none';
+      document.getElementById('mergeTemplateContainer').style.display = 'block';      
+    }
+    
+    function backToSelectRows() {
+      document.getElementById('mergeTemplateContainer').style.display = 'none';
+      document.getElementById('selectRowsContainer').style.display = 'block';
+    }
+
+    function backToSelectSheet() {
+      document.getElementById('selectRowsContainer').style.display = 'none';
+      document.getElementById('sheetSelectContainer').style.display = 'block';
+    }
+    
+    
+
+
+
+    
+    var pickerApiLoaded = false;
+
+    function showPicker(mimeType) {
+      gapi.load('picker', {
+        callback: function () {
+          pickerApiLoaded = true;
+        },
+      });
+      google.script.run.withSuccessHandler(function(response) {
+        if(mimeType=="document") {
+          createPicker(response,google.picker.ViewId.DOCS,'application/vnd.google-apps.document');
+        } else if(mimeType=="folder") {
+          createPicker(response,google.picker.ViewId.FOLDERS,'application/vnd.google-apps.folder');
+        }
+      }).withFailureHandler(showWarning).getOAuthToken();
+    }
+
+    function createPicker(token,view,mimeType) {
+      if (pickerApiLoaded && token) {
+
+        var view = new google.picker.DocsView(view);
+        view.setMimeTypes(mimeType);
+        if(mimeType=="application/vnd.google-apps.folder") view.setSelectFolderEnabled(true);
+
+        var picker = new google.picker.PickerBuilder()
+          .addView(view)
+          .enableFeature(google.picker.Feature.NAV_HIDDEN)
+          .hideTitleBar()
+          .setOAuthToken(token)
+          .setCallback(pickerCallback)
+          .setOrigin('https://docs.google.com')
+          .build();
+
+          picker.setVisible(true);
+      } else {
+        showWarning('Error: Unable to load the file picker.');
+      }
+    }
+
+    function pickerCallback(data) {
+      var action = data[google.picker.Response.ACTION];
+      if (action == google.picker.Action.PICKED) {
+        var doc = data[google.picker.Response.DOCUMENTS][0];
+        var id = doc[google.picker.Document.ID];
+        var mimeType = doc[google.picker.Document.MIME_TYPE];
+        if(mimeType === "application/vnd.google-apps.folder") {
+          google.script.run.withSuccessHandler(templateSetup).setTemplateId(id,'REPOSITORY_ID');
+          console.log("id: "+id);
+        }
+        else if(mimeType === "application/vnd.google-apps.document") {
+          google.script.run.withSuccessHandler(templateSetup).setTemplateId(id,'TEMPLATE_ID');
+        }
+        else {
+          showWarning('Error: Google Drive MimeType no disponible.');
+        }
+      }
+    }
+
+    function showWarning(message,timeout=2000) {
+      var warningElement = document.getElementById('warningMessage');
+      warningElement.innerHTML = message;
+      warningElement.style.display = 'flex';
+      console.log("dins showWarning, message: "+message+" timeout="+timeout);
+      setTimeout(function() {
+        warningElement.style.display = 'none';
+        console.log("finalitzant showWarning");
+      }, timeout);
+    }
+
+
+  </script>
+  <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
+</body>
+</html>
