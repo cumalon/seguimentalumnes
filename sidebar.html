@@ -5,8 +5,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
 
-    /* Estil bàsic per a la taula */
-    table {
+    table { /* canvi tonto proves */
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
@@ -16,35 +15,39 @@
      
     th, td {
       border: 1px solid #ddd;
-      line-height: normal; /* Pot ser normal o un valor que et convingui */
       text-align: left;
-      vertical-align: middle; /* Opcions: top, middle, bottom */
+      vertical-align: middle;
       transition: background-color 0.3s; /* Efecte de transició */
     }
 
+    td select {
+      width: 100%;
+      max-width: 100%;
+      border: 0;
+      padding: 0;
+      margin: 0;
+    }
+
     th {
-
-      position: sticky;    /* Manté la capçalera a la part superior */
-      top: 0;              /* Posició a la qual es mantindrà fixa */
-      z-index: 10;        /* Assegura que la capçalera estigui per sobre del contingut */
-
-      background-color: #4CAF50; /* Color de fons modern */
+      position: sticky;  /* fixed header */
+      top: 0;            /* header position */
+      z-index: 10;       /* header over content */
+      background-color: #4CAF50;
       padding: 10px;
-      color: white; /* Color del text a blanc */
+      color: white;
       font-weight: bold;
       font-size: 16px;
     }
 
     td {
-      padding: 5px 9px; /* Ajusta el padding (vertical horitzontal) */
-      line-height: normal; /* Pot ser normal o un valor que et convingui */
+      padding: 5px 9px;
+      line-height: normal;
     }
 
     tr:hover {
-      background-color: #f1f1f1; /* Color de fons en passar el ratolí sobre la fila */
+      background-color: #f1f1f1;
     }
 
-    /* Estils per al panell de càrrega */
     #loadingOverlay {
       position: fixed;
       top: 0;
@@ -63,7 +66,6 @@
       height: 50px;
     }
 
-    /* Estils per al missatge d'advertència */
     #warningMessage {
       display: none;
       position: absolute;
@@ -76,18 +78,17 @@
       align-items: center;
       z-index: 9999;
       color: rgba(240, 140, 145, 0.8);
-      font-size: 18px; /* Augmenta la mida del text */
+      font-size: 18px;
       text-align: center;
     }
 
-    /* Estils per als contenidors */
     #sheetSelectContainer,
     #selectRowsContainer,
     #mergeTemplateContainer,
     #tagMappingContainer {
       height: auto;
       padding: 10px;
-      margin: 10px 0; /* Espai entre seccions */
+      margin: 10px 0;
     }
     
     #sheetSelectContainerNoButton,
@@ -121,17 +122,15 @@
     #keyHeaderSelect {
       width: 95%;
       max-width: 95%;
-      text-overflow: ellipsis; /* Mostrem "..." si el text és massa llarg */
+      text-overflow: ellipsis; /* show "..." whet text is too long */
     }
 
-    /* Estils per als títols */
     h2, h3 {
       color: #333;
       font-family: 'Arial', sans-serif;
       margin-bottom: 10px;
     }
 
-    /* Estils per als selectors i botons */
     select, button {
       padding: 10px;
       margin-top: 10px;
@@ -140,52 +139,52 @@
       font-size: 14px;
       font-family: 'Arial', sans-serif;
       cursor: pointer;
-      transition: background-color 0.3s, border-color 0.3s; /* Efecte de transició */
+      transition: background-color 0.3s, border-color 0.3s;
     }
 
     select {
-      width: 75%; /* Fixem l'ample */
-      max-width: 75%; /* Limitem l'ample màxim */
-      white-space: nowrap; /* Evitem que el text s'enrotlli */
-      overflow: hidden; /* Ocultem qualsevol text que excedeixi l'amplada */
+      width: 75%;
+      max-width: 75%;
+      white-space: nowrap;
+      overflow: hidden;
     }
 
     select:focus, button:focus {
-      outline: none; /* Elimina l'esquema de focus per defecte */
-      border-color: #4CAF50; /* Canvi de color de contorn en focus */
+      outline: none;
+      border-color: #4CAF50;
     }
 
     button {
-      background-color: #4CAF50; /* Color de fons dels botons */
-      color: white; /* Color del text */
-      border: none; /* Sense bordes per als botons */
+      background-color: #4CAF50;
+      color: white;
+      border: none;
     }
 
     button:hover {
-      background-color: #45a049; /* Color de fons en passar el ratolí sobre el botó */
+      background-color: #45a049;
     }
 
     button:active {
-      transform: translateY(2px); /* Mou el botó cap avall */
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Ombra reduïda */
+      transform: translateY(2px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
     
     .button-container {
-      display: flex; /* Utilitza flexbox per a l'alineació */
-      justify-content: left; /* Centra els botons esq. */
-      gap: 10px; /* Espai entre els botons */
+      display: flex; /* align all objects */
+      justify-content: left;
+      gap: 10px;
     }
 
-    /* Estils per a les caselles de selecció */
     .rowCheckbox {
       width: 15px;
       height: 15px;
-      display: flex; /* Utilitza Flexbox per centrar */
-      justify-content: center; /* Centra horitzontalment */
+      display: flex;
+      justify-content: center;
     }
-</style>
+  </style>
 
 </head>
+
 <body onload="onLoadDo()">
 
   <!-- Fons ombrejat -->
