@@ -209,13 +209,13 @@
       <div id="headersContainer">
         <label for="enter-number">#fila de capçalera:</label>
         <input type="number" id="headerRowIndex" onchange="onchangeSheetSelect()" name="enter-number" min="1" step="1" value="1" required>
-        <select id="keyHeaderSelect" style="display:none;" onchange="onchangeKeyHeader()">
+        <select id="keyHeaderSelect" style="display:none;" onchange="clearAllTableBody();showSelectRows()">
           <!-- Aquí es substituirà per les headers disponibles -->
         </select>
       </div>
     </div>
     <br><br>
-    <button type="button" id="selectRowsBtn" onclick="onchangeKeyHeader()">
+    <button type="button" id="selectRowsBtn" onclick="showSelectRows()">
       <i class="fas fa-arrow-right"></i> <!-- Fletxa endavant -->
     </button>
   </div>
@@ -440,12 +440,12 @@
     }
 
     // Refrescar la taula de selecció
-    function onchangeKeyHeader() {
+    function showSelectRows() {
 
       var keyHeader = document.getElementById("keyHeaderSelect").value;
 
       if(keyHeader!="") {
-        clearAllTableBody();
+        
 
         // Comprovar si és la primera vegada que es prem "Desar seleccions"
         if (!document.getElementById('selectRowsTableBody').innerHTML) {
