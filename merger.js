@@ -122,7 +122,7 @@ function checkRowFileUrl(rowData) {
       Logger.log("   url NO vàlida o canvi de repository ...");
       // Crear una còpia del document i escriure la URL a "MERGE_DOC_URL"
       var novaUrl = crearICopiarInforme(rowData,plantillaDocId,carpetaId);
-      rowData.sheet.getRange(rowData.rowIndex + 1, reportColIndex + 1).setValue(novaUrl.replace(/\/edit.*/, "/preview?rm=demo"));
+      rowData.sheet.getRange(rowData.rowIndex + 1, reportColIndex + 1).setValue(novaUrl.replace(/\/edit.*/, "/preview?rm=minimal"));
       rowData.dades[reportColIndex] = novaUrl; // desem a dades perque si no existia la url tampoc la tenim a l'array
     }
     else {
