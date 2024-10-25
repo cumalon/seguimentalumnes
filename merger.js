@@ -159,6 +159,8 @@ function replaceDocumentContent(targetDocUrl, templateDocId) {
     // Comprovar el tipus d'element i utilitzar el mètode adequat
     if (element.getType() == DocumentApp.ElementType.PARAGRAPH) {
       targetBody.appendParagraph(element);
+    } else if (element.getType() == DocumentApp.ElementType.HEADER_SECTION) {
+      targetBody.appendTable(element.asHeaderSection());
     } else if (element.getType() == DocumentApp.ElementType.TABLE) {
       targetBody.appendTable(element);
     } else if (element.getType() == DocumentApp.ElementType.LIST_ITEM) {
@@ -215,9 +217,12 @@ function crearICopiarInforme(rowData,plantillaDocId,carpetaId) {
   var novaCopia = plantillaDoc.makeCopy(nomInforme, carpeta);
   var novaUrl = novaCopia.getUrl();
 
-  var email = rowData.dades[rowData.colIndex["Email"]];
-  novaCopia.addViewer(email);
-  
+  var emailIndex = rowData.colIndex["Email"];
+  if(emailIndex>0) {
+    var email = rowData.dades[emailIndex];
+    novaCopia.addViewer(email);
+  }
+
   Logger.log("Creat document: " + nomInforme + " amb URL: " + novaUrl);
   return novaUrl;
 }
