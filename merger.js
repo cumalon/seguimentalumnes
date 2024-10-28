@@ -89,17 +89,12 @@ function buscarOAfegirColumnaReport(full, headerRow) {
 
   // Si no es troba la columna "MERGE_DOC_URL", afegir-la
   if (reportColIndex === -1) {
-    // Trobar l'última columna amb dades
-    var lastCol = headerRow.length - 1;
-    while (lastCol >= 0 && headerRow[lastCol] === "") {
-      lastCol--;
-    }
-
-    // Inserir una nova columna dues columnes més enllà de l'última columna amb dades
-    var newReportColIndex = lastCol + 2;
+    full.insertColumnAfter(full.getLastColumn()); // Inserir la columna
+    full.insertColumnAfter(full.getLastColumn()); // Inserir la columna
+    var newReportColIndex = full.getLastColumn()+2;
     Logger.log(" ... inserint Columna 'MERGE_DOC_URL' a la col num: " + newReportColIndex);
-    full.insertColumnAfter(newReportColIndex - 1); // Inserir la columna
-    full.getRange(1, newReportColIndex).setValue("MERGE_DOC_URL"); // Estableix el nom de la columna
+    const headerRowIndex = parseInt(PropertiesService.getScriptProperties().getProperty("HEADER_ROW_INDEX"));
+    full.getRange(headerRowIndex, newReportColIndex).setValue("MERGE_DOC_URL"); // Estableix el nom de la columna
 
     reportColIndex = newReportColIndex - 1; // Actualitza l'índex de la columna "MERGE_DOC_URL"
     Logger.log("Columna 'MERGE_DOC_URL' afegida a la columna " + newReportColIndex);
@@ -115,7 +110,7 @@ function checkRowFileUrl(rowData) {
 
   var reportColIndex = rowData.headers.indexOf("MERGE_DOC_URL");
   Logger.log(" checkRowFIleUrl ... reportColIndex: "+reportColIndex)
-  if(reportColIndex!=undefined) {
+  if(reportColIndex!=-1) {
     var url = rowData.dades[reportColIndex];
     Logger.log("   col iundex found, url: "+url)
     if(!esUrlValida(url) || !esFitxerDe(url,carpetaId)) {
@@ -131,7 +126,7 @@ function checkRowFileUrl(rowData) {
     }
   }
   else {
-    Logger.log("  --- ups, reportColIndex undefined ??")
+    Logger.log("  --- ups, MERGE_DOC_URL column not found"); // TODO: comunicar error
   }
 
 }
