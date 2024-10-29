@@ -2,7 +2,8 @@ function ownMergeSetup(pestanya) {
   var full = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(pestanya);
   if (full) {
     var dades = full.getDataRange().getValues(); // Obtenir totes les dades del full
-    var headers = dades[0];
+    const headerRowIndex = parseInt(PropertiesService.getScriptProperties().getProperty("HEADER_ROW_INDEX"));
+    var headers = dades[headerRowIndex-1];
     return buscarOAfegirColumnaReport(full,headers);
   } else {
     Logger.log("La pestanya no existeix: " + pestanya);
