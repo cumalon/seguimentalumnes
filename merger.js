@@ -114,17 +114,25 @@ function checkRowFileUrl(rowData) {
   if(reportColIndex!=-1) {
     var url = rowData.dades[reportColIndex];
     Logger.log("   col iundex found, url: "+url)
-    if(!esUrlValida(url) || !esFitxerDe(url,carpetaId)) {
+    var file = getFileFromUrl(url);
+    if(!file || !esFitxerDe(url,carpetaId)) {
       Logger.log("   url NO vàlida o canvi de repository ...");
       // Crear una còpia del document i escriure la URL a "MERGE_DOC_URL"
-      var novaUrl = crearICopiarInforme(rowData,plantillaDocId,carpetaId);
-      rowData.sheet.getRange(rowData.rowIndex + 1, reportColIndex + 1).setValue(novaUrl.replace(/\/edit.*/, "/preview?rm=minimal"));
-      rowData.dades[reportColIndex] = novaUrl; // desem a dades perque si no existia la url tampoc la tenim a l'array
+      file = crearICopiarInforme(rowData,plantillaDocId,carpetaId);
+      rowData.sheet.getRange(rowData.rowIndex + 1, reportColIndex + 1).setValue(file.getUrl().replace(/\/edit.*/, "/preview?rm=minimal"));
+      rowData.dades[reportColIndex] = file.getUrl(); // desem a dades perque si no existia la url tampoc la tenim a l'array
     }
     else {
       Logger.log("   url SÍ vàlida");
       replaceDocumentContent(url, plantillaDocId);
     }
+
+    var emailIndex = rowData.colIndex["Email"];
+    if(emailIndex>0) { // Email is available
+      var email = rowData.dades[emailIndex];
+      addViewerSilently(file.getId(),email); // cal fer sempre per si canvia el Email
+    }
+
   }
   else {
     Logger.log("  --- ups, MERGE_DOC_URL column not found"); // TODO: comunicar error
@@ -171,17 +179,6 @@ function replaceDocumentContent(targetDocUrl, templateDocId) {
   targetDoc.saveAndClose();
 }
 
-// Comprovar si una URL és vàlida i apunta a un document existent que no està a la paperera
-function esUrlValida(url) {
-  try {
-    var fileId = url.match(/[-\w]{25,}/); // Extreure l'ID del fitxer de la URL
-    var file = DriveApp.getFileById(fileId);
-    return file && !file.isTrashed(); // Comprovar si el fitxer existeix i no està a la paperera
-  } catch (e) {
-    return false;
-  }
-}
-
 function esFitxerDe(url,carpetaId) {
   try {
     var fileId = url.match(/[-\w]{25,}/); // Extreure l'ID del fitxer de la URL
@@ -211,16 +208,9 @@ function crearICopiarInforme(rowData,plantillaDocId,carpetaId) {
   var carpeta = DriveApp.getFolderById(carpetaId);
 
   var novaCopia = plantillaDoc.makeCopy(nomInforme, carpeta);
-  var novaUrl = novaCopia.getUrl();
 
-  var emailIndex = rowData.colIndex["Email"];
-  if(emailIndex>0) {
-    var email = rowData.dades[emailIndex];
-    novaCopia.addViewer(email);
-  }
-
-  Logger.log("Creat document: " + nomInforme + " amb URL: " + novaUrl);
-  return novaUrl;
+  Logger.log("Creat document: " + nomInforme + " amb URL: " + novaCopia.getUrl());
+  return novaCopia;
 }
 
 function replaceTags(rowData, mapatge) {
