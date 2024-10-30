@@ -1,13 +1,17 @@
 function addViewerSilently(fileId, emailAddress) {
-  var permission = {
-    'type': 'user',
-    'role': 'reader',
-    'emailAddress': emailAddress
-  };
-  
-  Drive.Permissions.create(permission, fileId, {
-    'sendNotificationEmail': false
-  });
+  try {
+    var permission = {
+      'type': 'user',
+      'role': 'reader',
+      'emailAddress': emailAddress
+    };
+    
+    Drive.Permissions.create(permission, fileId, {
+      'sendNotificationEmail': false
+    });
+  } catch(e) {
+    Logger.log(e);
+  }
 }
 
 function extractFileId(url) {
@@ -26,4 +30,3 @@ function getFileFromUrl(url) {
     return null;
   }
 }
-

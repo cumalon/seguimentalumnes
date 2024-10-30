@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f4f4f9;
+      }
+
+      h1 {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      button {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        display: block;
+        margin: 0 auto 20px auto;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+
+      #loadingSpinner {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      #resultContainer {
+        text-align: center;
+      }
+
+      table {
+        width: auto; /* Permet que la taula s'ajusti al contingut */
+        margin: 0 auto;
+        border-collapse: collapse;
+        background-color: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      table tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      td {
+        padding: 8px 10px; /* Redueix el padding per a les cel·les */
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      a {
+        color: #4CAF50;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+    <script>
+      function loadData() {
+        document.getElementById('loadingSpinner').style.display = 'block';
+        google.script.run.withSuccessHandler(showResults).processUrls();
+        google.script.run.withSuccessHandler(setUserName).getUserName(); // Obtenim el nom d'usuari
+      }
+
+      function showResults(data) {
+        document.getElementById('loadingSpinner').style.display = 'none';
+        if (data.length === 0) {
+          document.getElementById('resultContainer').innerHTML = '<p>No reports found.</p>';
+          return;
+        }
+
+        var html = '<table><tbody>';
+        data.forEach(function(item) {
+          html += '<tr><td>' + item.reportName + '</td><td><a href="' + item.reportUrl + '" target="_blank">consulta l\'informe</a></td></tr>';
+        });
+        html += '</tbody></table>';
+
+        document.getElementById('resultContainer').innerHTML = html;
+      }
+
+      function setUserName(userName) {
+        var h1 = document.querySelector('h1');
+        h1.innerText = "Informes " + userName; // Actualitzem l'encapçalament
+        h1.style.display = "block";
+      }
+    </script>
+  </head>
+  <body onload="loadData()">
+    <h1 style="display:none;"></h1>
+    <div id="loadingSpinner">
+      <img src="https://www.google.com/images/spin-32.gif" alt="Loading...">
+    </div>
+    <!-- <button onclick="loadData()">Load Report URLs</button> -->
+    <div id="resultContainer"></div>
+  </body>
+</html>
+

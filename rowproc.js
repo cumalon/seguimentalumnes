@@ -56,7 +56,7 @@ function carregarDadesPestanya(keyHeader) {
 
   // Extreu les dades de la columna "mianHeader"
   var keyValues = [];
-  var lastIndex = dades.length-headerRowIndex+1;
+  var lastIndex = dades.length;//-headerRowIndex+1;
   for (var i = headerRowIndex; i < lastIndex; i++) {
     var fila = {};
     fila[keyHeader] = dades[i][headerColIndex]; // TODO: revisar això que sembla una liada absurda, pq no desar el valor de la keyHeader i ja???
