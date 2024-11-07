@@ -13,7 +13,7 @@ La webapp genera una pàgina html on s'enllaça els informes generats. Hi ha due
 
 ## Com es fa?
 
-Aquesta eina realitza un procés merge entre les dades d'un full de càlcul i una plantilla prefefinida.
+Aquesta eina realitza un procés merge entre les dades d'un full de càlcul i una plantilla predefinida.
 
 El procés merge consisteix en combinar la informació que conté el full de càlcul amb la plantilla, amb la finalitat de generar documents o informes personalitzats. Aquest procés permet visualitzar dades estructurades (com noms, adreces, qualificacions o altres valors) en diferents documents o formats mantenint un estil uniforme.
 
@@ -27,12 +27,15 @@ El resultat és una sèrie de documents generats automàticament on cada un cont
 
 ### Fulls i camps importants
 
-Les dades d'un merge han d'estar totes elles en una sola pestanya del full de càlcul. Els noms de les capçaleres són lliures per realitzar un procés de merge, però no és així quan s'executa la webapp. La webapp buscarà els camps **Email** i **Cognoms, Nom**.
+Els informes accessibles des de la webapp es llisten a una taula de dades del full amb noma **webapp** (cal veure exemples). Aquest mateix full també conté la taula d'usuaris Google amb accés admin i la taula amb els Cognoms, Nom que es podran seleccionar des de la visualització admin.
+
+Les dades d'un merge han d'estar totes elles en una sola pestanya del full de càlcul. El full pot tenir qualsevol nom. Els noms de les capçaleres són lliures per realitzar un procés de merge, però no és així quan s'executa la webapp. La webapp buscarà els camps **Email** i **Cognoms, Nom**.
 
 
 **Email:** quan posem aquest camp en una de les columnes d'un merge, el document generat de cada fila es comparteix en mode lectura amb el correu proporcionat. La webapp s'ha d'executar des d'un usuari Google, de manera que, per defecte, només es visualitza els informes generats i compartits amb l'usuari en concret. Això permet que, en una graella de qualificacions d'un grup d'alumnes per exemple, un estudiant visualitzi únicament les seves qualificacions.
 
 **Cognoms, Nom**: quan un usuari admin executa la webapp aquest pot accedir als informes generats per a totes i cadascuna de les files del full de dades. En aquest cas, apareix un selector on es pot escollit el Cognom, Nom del qual es vol visualitzar els informes. Aquesta seria la vista que podria veure el professorat de l'exemple acadèmic mencionat abans.
+
 
 
 # Us de clasp
