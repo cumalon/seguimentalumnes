@@ -1,14 +1,43 @@
+function amIAdmin_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const s = ss.getSheetByName('webapp');
+  var isAdmin = false;
+  if(s) {
+    const email = getUserEmail();
+    isAdmin = s.getRange("H1:H"+ s.getLastRow()).getValues().some(function(row) {
+      return row[0] == email;
+    });
+  }
+  Logger.log("isAdmin: "+isAdmin);
+  return isAdmin;
+}
+
+function getIndexPageName_() {
+  return amIAdmin_()? "adminIndex" : "webapp"
+}
+
 function doGet(e) {
-  return HtmlService.createHtmlOutputFromFile('webapp')
-    .setTitle('URL Reports') // Estableix el títol del document
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL); // Opcional, permet que la pàgina es mostri dins d'un iframe, si cal
+  const filename = getIndexPageName_();
+  return HtmlService.createTemplateFromFile(filename)
+                    .evaluate()
+                    .setTitle("Informes d'avaluació")
+                    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL); // Opcional, permet que la pàgina es mostri dins d'un iframe, si cal
+}
+
+// funció per incrustar codi de fitxers externs
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
 function processUrls() {
+  var userEmail = getUserEmail();
+  return processUrlsByEmail(userEmail);
+}
+
+function processUrlsByEmail(userEmail) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('webapp');
   var data = sheet.getDataRange().getValues();
-  var userEmail = getUserEmail();
   var results = [];
 
 Logger.log(data);
@@ -62,4 +91,15 @@ function getUserName() {
     return name;
 }
 
-
+function getNamesList() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("webapp");
+  const range = sheet.getRange("J2:L" + sheet.getLastRow()); // Obtenim les dades des de J2 fins a L (inclou Cognoms, Nom i Email)
+  const values = range.getValues(); // Obtenim les dades del rang
+  return values.map(function(row) {
+    return {
+      name: row[0],  // Cognoms, Nom (columna J)
+      email: row[2]  // Email (columna L)
+    };
+  });
+}

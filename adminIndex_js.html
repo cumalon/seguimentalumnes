@@ -1,0 +1,32 @@
+<script>
+  function loadDataByEmail(name,email) {
+    document.getElementById('loadingSpinner').style.display = 'block';
+    google.script.run.withSuccessHandler(showResults).processUrlsByEmail(email);
+    setTitle(name);
+  }
+
+  function loadNames() {
+    google.script.run.withSuccessHandler(function(names) {
+      var selectElement = document.getElementById('nameSelect');
+      names.forEach(function(item) {
+        var option = document.createElement('option');
+        option.value = item.name; // El valor que es mostrarà al selector és el nom
+        option.text = item.name; // El text visible serà també el nom
+        option.setAttribute('data-email', item.email); // Guardem l'email associat en un atribut data-email
+        selectElement.appendChild(option);
+      });
+      selectElement.addEventListener('change', getEmailAndLoadData); // Actualitza el correu quan canviem la selecció
+    }).getNamesList(); // Crida la funció getNamesList per obtenir noms i emails
+  }
+
+  function getEmailAndLoadData() {
+    var selectElement = document.getElementById('nameSelect');
+    var selectedOption = selectElement.options[selectElement.selectedIndex];
+    var email = selectedOption ? selectedOption.getAttribute('data-email') : null;
+    if(email) {
+      document.getElementById('loadingSpinner').style.display = 'block';
+      google.script.run.withSuccessHandler(showResults).processUrlsByEmail(email);
+      //google.script.run.withSuccessHandler(setUserName).getUserName(); // Obtenim el nom d'usuari
+    }
+  }
+</script>

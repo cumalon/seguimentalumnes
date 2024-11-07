@@ -1,0 +1,29 @@
+<script>
+  function loadData() {
+    document.getElementById('loadingSpinner').style.display = 'block';
+    google.script.run.withSuccessHandler(showResults).processUrls();
+    google.script.run.withSuccessHandler(setUserName).getUserName(); // Obtenim el nom d'usuari
+  }
+
+  function showResults(data) {
+    document.getElementById('loadingSpinner').style.display = 'none';
+    if (data.length === 0) {
+      document.getElementById('resultContainer').innerHTML = '<p>No reports found.</p>';
+      return;
+    }
+
+    var html = '<table><tbody>';
+    data.forEach(function(item) {
+      html += '<tr><td>' + item.reportName + '</td><td><a href="' + item.reportUrl + '" target="_blank">consulta l\'informe</a></td></tr>';
+    });
+    html += '</tbody></table>';
+
+    document.getElementById('resultContainer').innerHTML = html;
+  }
+
+  function setUserName(userName) {
+    var h1 = document.querySelector('h1');
+    h1.innerText = "Informes " + userName; // Actualitzem l'encapçalament
+    h1.style.display = "block";
+  }
+</script>
