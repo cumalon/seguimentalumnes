@@ -27,15 +27,13 @@ El resultat és una sèrie de documents generats automàticament on cada un cont
 
 ### Fulls i camps importants
 
-Els informes accessibles des de la webapp es llisten a una taula de dades del full amb noma **webapp** (cal veure exemples). Aquest mateix full també conté la taula d'usuaris Google amb accés admin i la taula amb els Cognoms, Nom que es podran seleccionar des de la visualització admin.
-
 Les dades d'un merge han d'estar totes elles en una sola pestanya del full de càlcul. El full pot tenir qualsevol nom. Els noms de les capçaleres són lliures per realitzar un procés de merge, però no és així quan s'executa la webapp. La webapp buscarà els camps **Email** i **Cognoms, Nom**.
-
 
 **Email:** quan posem aquest camp en una de les columnes d'un merge, el document generat de cada fila es comparteix en mode lectura amb el correu proporcionat. La webapp s'ha d'executar des d'un usuari Google, de manera que, per defecte, només es visualitza els informes generats i compartits amb l'usuari en concret. Això permet que, en una graella de qualificacions d'un grup d'alumnes per exemple, un estudiant visualitzi únicament les seves qualificacions.
 
-**Cognoms, Nom**: quan un usuari admin executa la webapp aquest pot accedir als informes generats per a totes i cadascuna de les files del full de dades. En aquest cas, apareix un selector on es pot escollit el Cognom, Nom del qual es vol visualitzar els informes. Aquesta seria la vista que podria veure el professorat de l'exemple acadèmic mencionat abans.
+**Cognoms, Nom**: quan un usuari admin executa la webapp aquest pot accedir als informes generats per a múltiples files del full de dades. En aquest cas, apareix un selector on es pot escollit el Cognom, Nom del qual es vol visualitzar els informes. Aquesta seria la vista que podria veure el professorat de l'exemple acadèmic mencionat abans.
 
+Els informes accessibles des de la webapp es llisten a una taula de dades del full amb noma **webapp** (cal veure exemples). Aquest mateix full també conté la taula d'usuaris Google amb accés admin i la taula amb els Cognoms, Nom que es podran seleccionar des de la visualització admin.
 
 
 # Us de clasp
