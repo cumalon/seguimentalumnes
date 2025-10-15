@@ -2,6 +2,7 @@ function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Alumnes')
       .addItem("Gestiona informes d'avaluació", 'showSidebar')
+      .addItem("Enviament massiu", 'showEmailSidebar')
       .addToUi();
 }
 
@@ -10,6 +11,14 @@ function showSidebar() {
   var sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets().map(s => s.getName());
   var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   html.append(`<script>buildSheetSelect(${JSON.stringify({sheets: sheets, selected: activeSheet.getName()})});</script>`);
+  SpreadsheetApp.getUi().showSidebar(html);
+}
+
+function showEmailSidebar() {
+  var html = HtmlService.createHtmlOutputFromFile('emailSidebar');
+  var sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets().map(s => s.getName());
+  var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  html.append(`<script>initEmailSidebar(${JSON.stringify({sheets: sheets, selected: activeSheet.getName()})});</script>`);
   SpreadsheetApp.getUi().showSidebar(html);
 }
 

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      padding: 10px;
+      margin: 0;
+    }
+
+    h2, h3 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .section {
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    select, input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+      font-family: 'Courier New', monospace;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 5px;
+      margin-top: 5px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .button-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+      font-weight: bold;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    #loadingOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.05);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9998;
+    }
+
+    #warningMessage {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: white;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .checkbox-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 5px;
+      background-color: white;
+    }
+
+    .checkbox-item {
+      padding: 3px;
+    }
+
+    .info-text {
+      font-size: 12px;
+      color: #666;
+      font-style: italic;
+      margin-top: -5px;
+      margin-bottom: 10px;
+    }
+
+    .schedule-options {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .schedule-options label {
+      display: inline;
+      font-weight: normal;
+    }
+
+    #dateTimeInputs {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loadingOverlay">
+    <div id="loadingSpinner">
+      <img src="https://i.gifer.com/bfR.gif" alt="loading" style="width: 50px; height: 50px;" />
+    </div>
+  </div>
+
+  <div id="warningMessage"></div>
+
+  <h2>Enviament massiu de correus</h2>
+
+  <!-- Section 1: Sheet Selection -->
+  <div class="section">
+    <h3>1. Selecciona la pestanya</h3>
+    <label for="sheetSelect">Pestanya:</label>
+    <select id="sheetSelect">
+      <option value="">--Selecciona una pestanya--</option>
+    </select>
+    
+    <label for="headerRowIndex">#Fila de capçalera:</label>
+    <input type="number" id="headerRowIndex" value="1" min="1" step="1">
+    
+    <button onclick="loadSheetHeaders()">Carregar capçaleres</button>
+  </div>
+
+  <!-- Section 2: Email Column -->
+  <div class="section" id="emailColumnSection" style="display:none;">
+    <h3>2. Columna d'email</h3>
+    <label for="emailColumnSelect">Columna amb emails:</label>
+    <select id="emailColumnSelect">
+      <option value="">--Selecciona columna--</option>
+    </select>
+  </div>
+
+  <!-- Section 3: Email Body -->
+  <div class="section" id="emailBodySection" style="display:none;">
+    <h3>3. Cos del correu</h3>
+    <label for="emailSubject">Assumpte:</label>
+    <input type="text" id="emailSubject" placeholder="Assumpte del correu">
+    
+    <label for="emailBody">Cos del missatge (utilitza &lt;&lt;NomTag&gt;&gt; per camps):</label>
+    <textarea id="emailBody" placeholder="Escriu el cos del correu aquí. Utilitza <<NomTag>> per personalitzar amb les dades de cada fila."></textarea>
+    <p class="info-text">Exemple: Hola &lt;&lt;Nom&gt;&gt;, el teu resultat és &lt;&lt;Nota&gt;&gt;</p>
+    
+    <button onclick="loadTagMapping()">Següent: Mapeja tags</button>
+  </div>
+
+  <!-- Section 4: Tag Mapping -->
+  <div class="section" id="tagMappingSection" style="display:none;">
+    <h3>4. Mapeja tags amb capçaleres</h3>
+    <div id="tagMappingContainer">
+      <table id="tagMappingTable">
+        <thead>
+          <tr>
+            <th>Tag</th>
+            <th>Capçalera</th>
+          </tr>
+        </thead>
+        <tbody id="tagMappingTableBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section 5: Attachments -->
+  <div class="section" id="attachmentsSection" style="display:none;">
+    <h3>5. Adjunts (opcional)</h3>
+    <label>Selecciona columnes amb URLs d'adjunts:</label>
+    <div id="attachmentColumnsList" class="checkbox-list">
+    </div>
+    <p class="info-text">Els Google Docs es convertiran automàticament a PDF</p>
+  </div>
+
+  <!-- Section 6: Scheduling -->
+  <div class="section" id="schedulingSection" style="display:none;">
+    <h3>6. Programació d'enviament</h3>
+    <div class="schedule-options">
+      <input type="radio" id="scheduleDelay" name="scheduleType" value="delay" checked>
+      <label for="scheduleDelay">Demora (minuts):</label>
+      <input type="number" id="delayMinutes" value="5" min="0" step="1" style="width: 60px;">
+    </div>
+    <div class="schedule-options">
+      <input type="radio" id="scheduleDateTime" name="scheduleType" value="datetime">
+      <label for="scheduleDateTime">Data i hora específica:</label>
+    </div>
+    <div id="dateTimeInputs">
+      <input type="datetime-local" id="scheduledDateTime">
+    </div>
+  </div>
+
+  <!-- Section 7: Send -->
+  <div class="section" id="sendSection" style="display:none;">
+    <h3>7. Enviar correus</h3>
+    <p class="info-text">Revisa la configuració abans d'enviar</p>
+    <div class="button-container">
+      <button onclick="sendMassEmails()" style="background-color: #f44336;">
+        <i class="fas fa-paper-plane"></i> Enviar correus
+      </button>
+    </div>
+  </div>
+
+  <script>
+    var availableHeaders = [];
+    var emailTags = [];
+
+    function initEmailSidebar(data) {
+      var select = document.getElementById('sheetSelect');
+      data.sheets.forEach(function(sheet) {
+        var option = document.createElement('option');
+        option.value = sheet;
+        option.text = sheet;
+        if(sheet === data.selected) option.selected = true;
+        select.appendChild(option);
+      });
+    }
+
+    function loadSheetHeaders() {
+      var sheetName = document.getElementById('sheetSelect').value;
+      var headerRowIndex = document.getElementById('headerRowIndex').value;
+      
+      if (!sheetName) {
+        showWarning('Selecciona una pestanya primer');
+        return;
+      }
+
+      showLoading(true);
+      google.script.run
+        .withSuccessHandler(function(headers) {
+          availableHeaders = headers;
+          populateEmailColumnSelect(headers);
+          populateAttachmentColumnsList(headers);
+          document.getElementById('emailColumnSection').style.display = 'block';
+          document.getElementById('emailBodySection').style.display = 'block';
+          document.getElementById('attachmentsSection').style.display = 'block';
+          document.getElementById('schedulingSection').style.display = 'block';
+          showLoading(false);
+        })
+        .withFailureHandler(function(error) {
+          showWarning('Error carregant capçaleres: ' + error.message);
+          showLoading(false);
+        })
+        .carregarCapcaleres(sheetName, parseInt(headerRowIndex));
+    }
+
+    function populateEmailColumnSelect(headers) {
+      var select = document.getElementById('emailColumnSelect');
+      select.innerHTML = '<option value="">--Selecciona columna--</option>';
+      
+      headers.forEach(function(header) {
+        var option = document.createElement('option');
+        option.value = header;
+        option.text = header;
+        // Auto-select if column name contains "email" or "Email"
+        if (header.toLowerCase().includes('email')) {
+          option.selected = true;
+        }
+        select.appendChild(option);
+      });
+    }
+
+    function populateAttachmentColumnsList(headers) {
+      var container = document.getElementById('attachmentColumnsList');
+      container.innerHTML = '';
+      
+      headers.forEach(function(header, index) {
+        var div = document.createElement('div');
+        div.className = 'checkbox-item';
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = 'attach_' + index;
+        checkbox.value = header;
+        var label = document.createElement('label');
+        label.htmlFor = 'attach_' + index;
+        label.textContent = ' ' + header;
+        label.style.display = 'inline';
+        label.style.fontWeight = 'normal';
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        container.appendChild(div);
+      });
+    }
+
+    function loadTagMapping() {
+      var emailBody = document.getElementById('emailBody').value;
+      
+      if (!emailBody.trim()) {
+        showWarning('Escriu el cos del correu primer');
+        return;
+      }
+
+      // Extract tags from email body
+      var tagPattern = /<<(.*?)>>/g;
+      var matches;
+      emailTags = [];
+      
+      while ((matches = tagPattern.exec(emailBody)) !== null) {
+        var tag = matches[1].trim();
+        if (emailTags.indexOf(tag) === -1) {
+          emailTags.push(tag);
+        }
+      }
+
+      if (emailTags.length === 0) {
+        showWarning('No s\'han trobat tags en el cos del correu. Utilitza el format <<NomTag>>');
+        return;
+      }
+
+      // Build tag mapping table
+      var tbody = document.getElementById('tagMappingTableBody');
+      tbody.innerHTML = '';
+
+      emailTags.forEach(function(tag, index) {
+        var row = document.createElement('tr');
+        
+        var tagCell = document.createElement('td');
+        tagCell.textContent = tag;
+        
+        var selectCell = document.createElement('td');
+        var select = document.createElement('select');
+        select.id = 'tagMap_' + index;
+        
+        var defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.text = '--';
+        select.appendChild(defaultOption);
+        
+        availableHeaders.forEach(function(header) {
+          var option = document.createElement('option');
+          option.value = header;
+          option.text = header;
+          // Auto-map if tag matches header
+          if (tag === header) {
+            option.selected = true;
+          }
+          select.appendChild(option);
+        });
+        
+        selectCell.appendChild(select);
+        row.appendChild(tagCell);
+        row.appendChild(selectCell);
+        tbody.appendChild(row);
+      });
+
+      document.getElementById('tagMappingSection').style.display = 'block';
+      document.getElementById('sendSection').style.display = 'block';
+    }
+
+    // Enable/disable datetime inputs based on radio selection
+    document.addEventListener('DOMContentLoaded', function() {
+      var radioButtons = document.getElementsByName('scheduleType');
+      radioButtons.forEach(function(radio) {
+        radio.addEventListener('change', function() {
+          var dateTimeDiv = document.getElementById('dateTimeInputs');
+          if (this.value === 'datetime') {
+            dateTimeDiv.style.display = 'block';
+          } else {
+            dateTimeDiv.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    function sendMassEmails() {
+      // Validate all inputs
+      var sheetName = document.getElementById('sheetSelect').value;
+      var headerRowIndex = parseInt(document.getElementById('headerRowIndex').value);
+      var emailColumn = document.getElementById('emailColumnSelect').value;
+      var emailSubject = document.getElementById('emailSubject').value;
+      var emailBody = document.getElementById('emailBody').value;
+
+      if (!sheetName || !emailColumn || !emailSubject.trim() || !emailBody.trim()) {
+        showWarning('Omple tots els camps obligatoris');
+        return;
+      }
+
+      // Build tag mapping
+      var tagMapping = [];
+      emailTags.forEach(function(tag, index) {
+        var header = document.getElementById('tagMap_' + index).value;
+        if (header) {
+          tagMapping.push({ tag: tag, header: header });
+        }
+      });
+
+      // Get attachment columns
+      var attachmentColumns = [];
+      var checkboxes = document.querySelectorAll('#attachmentColumnsList input[type="checkbox"]:checked');
+      checkboxes.forEach(function(checkbox) {
+        attachmentColumns.push(checkbox.value);
+      });
+
+      // Get scheduling info
+      var scheduleType = document.querySelector('input[name="scheduleType"]:checked').value;
+      var scheduleInfo = {};
+      
+      if (scheduleType === 'delay') {
+        scheduleInfo.type = 'delay';
+        scheduleInfo.delayMinutes = parseInt(document.getElementById('delayMinutes').value);
+      } else {
+        scheduleInfo.type = 'datetime';
+        scheduleInfo.datetime = document.getElementById('scheduledDateTime').value;
+        if (!scheduleInfo.datetime) {
+          showWarning('Selecciona una data i hora');
+          return;
+        }
+      }
+
+      var config = {
+        sheetName: sheetName,
+        headerRowIndex: headerRowIndex,
+        emailColumn: emailColumn,
+        subject: emailSubject,
+        body: emailBody,
+        tagMapping: tagMapping,
+        attachmentColumns: attachmentColumns,
+        scheduleInfo: scheduleInfo
+      };
+
+      if (confirm('Estàs segur que vols enviar els correus?')) {
+        showLoading(true);
+        google.script.run
+          .withSuccessHandler(function(result) {
+            showLoading(false);
+            showWarning('Correus programats correctament! S\'enviaran ' + result.count + ' correus.', 5000);
+          })
+          .withFailureHandler(function(error) {
+            showLoading(false);
+            showWarning('Error programant l\'enviament: ' + error.message);
+          })
+          .scheduleMassEmails(config);
+      }
+    }
+
+    function showLoading(show) {
+      document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+    }
+
+    function showWarning(message, timeout) {
+      timeout = timeout || 3000;
+      var warningElement = document.getElementById('warningMessage');
+      warningElement.textContent = message;
+      warningElement.style.display = 'flex';
+      setTimeout(function() {
+        warningElement.style.display = 'none';
+      }, timeout);
+    }
+  </script>
+</body>
+</html>
