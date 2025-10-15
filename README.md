@@ -2,9 +2,10 @@
 
 Aquest projecte consisteix en una extensió de fulls de càlcul de Google.
 
-L'extensió té dues funcionalitats principals:
+L'extensió té tres funcionalitats principals:
 - Generar informes a partir de les dades d'un full de càlcul. 
 - Visualització dels informes en una webapp.
+- Enviament massiu de correus personalitzats amb adjunts.
 
 Els informes són documents de text de Google.
 
@@ -35,6 +36,33 @@ Les dades d'un merge han d'estar totes elles en una sola pestanya del full de c�
 
 Els informes accessibles des de la webapp es llisten a una taula de dades del full amb noma **webapp** (cal veure exemples). Aquest mateix full també conté la taula d'usuaris Google amb accés admin i la taula amb els Cognoms, Nom que es podran seleccionar des de la visualització admin.
 
+
+## Enviament massiu de correus
+
+L'extensió permet enviar correus electrònics personalitzats de forma massiva a partir d'una pestanya de dades del full de càlcul.
+
+### Característiques principals:
+
+- **Personalització amb tags**: El cos del correu pot contenir tags en format `<<NomTag>>` que s'associen automàticament o manualment amb les capçaleres de la pestanya.
+
+- **Adjunts des d'URLs**: Es poden afegir adjunts indicant URLs en columnes específiques de la pestanya. Si l'URL apunta a un Google Doc, es converteix automàticament a PDF.
+
+- **Programació d'enviament**: Els correus es poden programar amb una demora (per defecte 5 minuts) o seleccionant una data i hora específiques.
+
+- **Registre d'enviaments**: L'estat de cada enviament es registra automàticament en una columna de log (`EMAIL_LOG`) a la pestanya de dades.
+
+### Com utilitzar-ho:
+
+1. Obre el menú "Alumnes" i selecciona "Enviament massiu"
+2. Selecciona la pestanya de dades i indica la fila de capçalera
+3. Escull la columna que conté els emails dels destinataris
+4. Redacta l'assumpte i el cos del correu utilitzant tags (ex: `<<Nom>>`, `<<Nota>>`)
+5. Mapeja els tags amb les capçaleres corresponents de la pestanya
+6. Opcionalment, selecciona columnes amb URLs d'adjunts
+7. Configura quan s'enviarà el correu (demora o data/hora específica)
+8. Revisa i envia
+
+Els correus s'enviaran automàticament segons la programació establerta i es registrarà l'estat de cada enviament a la columna `EMAIL_LOG`.
 
 # Us de clasp
 
