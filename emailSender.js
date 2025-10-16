@@ -3,12 +3,66 @@
  * Handles scheduling and sending of mass emails with attachments
  */
 
+// Function to check email and attachment quotas
+function checkEmailQuotas(config) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(config.sheetName);
+    var data = sheet.getDataRange().getValues();
+    var emailColumnIndex = data[config.headerRowIndex - 1].indexOf(config.emailColumn);
+    
+    // Count emails to send
+    var emailCount = 0;
+    for (var i = config.headerRowIndex; i < data.length; i++) {
+      if (data[i][emailColumnIndex]) {
+        emailCount++;
+      }
+    }
+    
+    // Count attachments per email
+    var attachmentCount = config.attachmentColumns ? config.attachmentColumns.length : 0;
+    var totalAttachments = emailCount * attachmentCount;
+    
+    // Get remaining email quota
+    var emailQuotaRemaining = MailApp.getRemainingDailyQuota();
+    
+    // Google Workspace quotas (approximate - can vary by account type)
+    // Standard: 100 emails/day (consumer), 2000 emails/day (Google Workspace)
+    // Attachments: typically 25 MB total size per email
+    var quotaInfo = {
+      emailsToSend: emailCount,
+      emailQuotaRemaining: emailQuotaRemaining,
+      attachmentsPerEmail: attachmentCount,
+      totalAttachments: totalAttachments,
+      canProceed: emailCount <= emailQuotaRemaining,
+      quotaExceeded: emailCount > emailQuotaRemaining,
+      quotaPercentage: emailQuotaRemaining > 0 ? Math.round((emailCount / emailQuotaRemaining) * 100) : 100
+    };
+    
+    return quotaInfo;
+  } catch (error) {
+    Logger.log('Error checking quotas: ' + error);
+    throw error;
+  }
+}
+
 // Function to schedule mass emails
 function scheduleMassEmails(config) {
   try {
     // Validate configuration
     if (!config.sheetName || !config.emailColumn || !config.subject || !config.body) {
       throw new Error('Configuració incompleta');
+    }
+
+    // Check quotas first
+    var quotaInfo = checkEmailQuotas(config);
+    
+    // If quota exceeded, return error
+    if (quotaInfo.quotaExceeded) {
+      return {
+        success: false,
+        quotaInfo: quotaInfo,
+        error: 'Quota diària excedida. No es poden enviar els correus.'
+      };
     }
 
     // Check if immediate send (delay = 0)
@@ -21,7 +75,8 @@ function scheduleMassEmails(config) {
         success: true, 
         count: result.successCount, 
         executionTime: 'Immediat',
-        errors: result.errorCount
+        errors: result.errorCount,
+        quotaInfo: quotaInfo
       };
     }
 
@@ -48,19 +103,12 @@ function scheduleMassEmails(config) {
     // Add config key to trigger for later retrieval
     scriptProps.setProperty('PENDING_EMAIL_CONFIG', configKey);
 
-    // Count rows to send
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(config.sheetName);
-    var data = sheet.getDataRange().getValues();
-    var emailColumnIndex = data[config.headerRowIndex - 1].indexOf(config.emailColumn);
-    var rowCount = 0;
-    
-    for (var i = config.headerRowIndex; i < data.length; i++) {
-      if (data[i][emailColumnIndex]) {
-        rowCount++;
-      }
-    }
-
-    return { success: true, count: rowCount, executionTime: executionTime.toString() };
+    return { 
+      success: true, 
+      count: quotaInfo.emailsToSend, 
+      executionTime: executionTime.toString(),
+      quotaInfo: quotaInfo
+    };
   } catch (error) {
     Logger.log('Error in scheduleMassEmails: ' + error);
     throw error;

@@ -103,11 +103,59 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.05);
+      background-color: rgba(0, 0, 0, 0.7);
       display: none;
       justify-content: center;
       align-items: center;
       z-index: 9998;
+      flex-direction: column;
+    }
+
+    #loadingContent {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 400px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    #loadingContent h3 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .quota-info {
+      margin: 15px 0;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      text-align: left;
+    }
+
+    .quota-info div {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    .quota-label {
+      font-weight: bold;
+      color: #555;
+    }
+
+    .quota-value {
+      color: #333;
+      margin-left: 5px;
+    }
+
+    .quota-exceeded {
+      color: #f44336;
+      font-weight: bold;
+    }
+
+    .quota-ok {
+      color: #4CAF50;
+      font-weight: bold;
     }
 
     #warningMessage {
@@ -235,8 +283,18 @@
 <body>
 
   <div id="loadingOverlay">
-    <div id="loadingSpinner">
-      <img src="https://i.gifer.com/bfR.gif" alt="loading" style="width: 50px; height: 50px;" />
+    <div id="loadingContent">
+      <div id="loadingSpinner">
+        <img src="https://i.gifer.com/bfR.gif" alt="loading" style="width: 50px; height: 50px;" />
+      </div>
+      <h3 id="loadingTitle">Processant enviament...</h3>
+      <div id="quotaInfoDisplay" class="quota-info" style="display:none;">
+        <div><span class="quota-label">Correus a enviar:</span><span class="quota-value" id="emailsToSend">-</span></div>
+        <div><span class="quota-label">Quota disponible:</span><span class="quota-value" id="quotaRemaining">-</span></div>
+        <div><span class="quota-label">Adjunts per correu:</span><span class="quota-value" id="attachmentsPerEmail">-</span></div>
+        <div><span class="quota-label">Total adjunts:</span><span class="quota-value" id="totalAttachments">-</span></div>
+        <div id="quotaStatus"></div>
+      </div>
     </div>
   </div>
 
@@ -591,18 +649,31 @@
         showLoading(true);
         google.script.run
           .withSuccessHandler(function(result) {
-            showLoading(false);
-            var message;
-            if (result.executionTime === 'Immediat') {
-              message = 'Correus enviats! ' + result.count + ' enviaments correctes';
-              if (result.errors > 0) {
-                message += ', ' + result.errors + ' errors';
-              }
-              message += '. Revisa la columna EMAIL_LOG.';
-            } else {
-              message = 'Correus programats correctament! S\'enviaran ' + result.count + ' correus.';
+            // Display quota information
+            displayQuotaInfo(result.quotaInfo);
+            
+            // Check if quota exceeded
+            if (!result.success && result.quotaInfo && result.quotaInfo.quotaExceeded) {
+              showLoading(false);
+              showWarning('Quota diària excedida! No pots enviar ' + result.quotaInfo.emailsToSend + ' correus. Quota disponible: ' + result.quotaInfo.emailQuotaRemaining, 8000);
+              return;
             }
-            showWarning(message, 5000);
+            
+            // Wait a bit to show quota info, then hide loading and show success message
+            setTimeout(function() {
+              showLoading(false);
+              var message;
+              if (result.executionTime === 'Immediat') {
+                message = 'Correus enviats! ' + result.count + ' enviaments correctes';
+                if (result.errors > 0) {
+                  message += ', ' + result.errors + ' errors';
+                }
+                message += '. Revisa la columna EMAIL_LOG.';
+              } else {
+                message = 'Correus programats correctament! S\'enviaran ' + result.count + ' correus.';
+              }
+              showWarning(message, 5000);
+            }, 3000); // Show quota info for 3 seconds
           })
           .withFailureHandler(function(error) {
             showLoading(false);
@@ -612,8 +683,36 @@
       }
     }
 
+    function displayQuotaInfo(quotaInfo) {
+      if (!quotaInfo) return;
+      
+      document.getElementById('emailsToSend').textContent = quotaInfo.emailsToSend;
+      document.getElementById('quotaRemaining').textContent = quotaInfo.emailQuotaRemaining;
+      document.getElementById('attachmentsPerEmail').textContent = quotaInfo.attachmentsPerEmail;
+      document.getElementById('totalAttachments').textContent = quotaInfo.totalAttachments;
+      
+      var statusDiv = document.getElementById('quotaStatus');
+      if (quotaInfo.canProceed) {
+        statusDiv.innerHTML = '<span class="quota-ok">✓ Quota suficient per enviar els correus</span>';
+      } else {
+        statusDiv.innerHTML = '<span class="quota-exceeded">✗ Quota insuficient</span>';
+      }
+      
+      document.getElementById('quotaInfoDisplay').style.display = 'block';
+      document.getElementById('loadingTitle').textContent = 'Informació de quota';
+    }
+
     function showLoading(show) {
-      document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+      var overlay = document.getElementById('loadingOverlay');
+      if (show) {
+        // Reset quota display
+        document.getElementById('quotaInfoDisplay').style.display = 'none';
+        document.getElementById('loadingTitle').textContent = 'Processant enviament...';
+        document.getElementById('loadingSpinner').style.display = 'block';
+        overlay.style.display = 'flex';
+      } else {
+        overlay.style.display = 'none';
+      }
     }
 
     function showWarning(message, timeout) {
