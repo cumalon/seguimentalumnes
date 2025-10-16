@@ -147,18 +147,88 @@
     }
 
     .schedule-options {
-      display: flex;
-      gap: 10px;
       margin-bottom: 10px;
     }
 
     .schedule-options label {
-      display: inline;
+      display: inline-block;
       font-weight: normal;
+      margin-left: 5px;
+      vertical-align: middle;
     }
 
-    #dateTimeInputs {
+    .schedule-options input[type="checkbox"] {
+      width: auto;
+      margin-right: 5px;
+      margin-bottom: 0;
+      vertical-align: middle;
+    }
+
+    .schedule-options input[type="number"] {
+      width: 80px;
+      display: inline-block;
+      margin-left: 5px;
+      margin-bottom: 0;
+      vertical-align: middle;
+    }
+
+    #delayControls, #dateTimeInputs {
       display: none;
+      margin-left: 25px;
+      margin-top: 5px;
+    }
+
+    .collapsible-header {
+      cursor: pointer;
+      padding: 8px;
+      background-color: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 5px;
+      user-select: none;
+    }
+
+    .collapsible-header:hover {
+      background-color: #e8e8e8;
+    }
+
+    .collapsible-header::before {
+      content: '▶ ';
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .collapsible-header.active::before {
+      transform: rotate(90deg);
+    }
+
+    .collapsible-content {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .collapsible-content.active {
+      display: block;
+    }
+
+    .checkbox-item {
+      padding: 5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    .checkbox-item label {
+      margin: 0;
+      font-weight: normal;
+      flex-grow: 1;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -230,29 +300,36 @@
   <!-- Section 5: Attachments -->
   <div class="section" id="attachmentsSection" style="display:none;">
     <h3>5. Adjunts (opcional)</h3>
-    <label>Selecciona columnes amb URLs d'adjunts:</label>
-    <div id="attachmentColumnsList" class="checkbox-list">
+    <div class="collapsible-header" onclick="toggleAttachments()">
+      Selecció d'adjunts
     </div>
-    <p class="info-text">Els Google Docs es convertiran automàticament a PDF</p>
+    <div id="attachmentsCollapsible" class="collapsible-content">
+      <div id="attachmentColumnsList" class="checkbox-list">
+      </div>
+      <p class="info-text">Els Google Docs es convertiran automàticament a PDF</p>
+    </div>
   </div>
 
   <!-- Section 6: Scheduling -->
   <div class="section" id="schedulingSection" style="display:none;">
     <h3>6. Programació d'enviament</h3>
+    <p class="info-text">Per defecte, els correus s'enviaran immediatament</p>
+    
     <div class="schedule-options">
-      <input type="radio" id="scheduleImmediate" name="scheduleType" value="immediate" checked>
-      <label for="scheduleImmediate">Immediat (sense demora)</label>
+      <input type="checkbox" id="scheduleDelayCheck" onchange="toggleDelayControls()">
+      <label for="scheduleDelayCheck">Programar amb demora</label>
     </div>
-    <div class="schedule-options">
-      <input type="radio" id="scheduleDelay" name="scheduleType" value="delay">
-      <label for="scheduleDelay">Demora (minuts):</label>
-      <input type="number" id="delayMinutes" value="5" min="1" step="1" style="width: 60px;">
+    <div id="delayControls">
+      <label for="delayMinutes">Minuts de demora:</label>
+      <input type="number" id="delayMinutes" value="5" min="1" step="1">
     </div>
+    
     <div class="schedule-options">
-      <input type="radio" id="scheduleDateTime" name="scheduleType" value="datetime">
-      <label for="scheduleDateTime">Data i hora específica:</label>
+      <input type="checkbox" id="scheduleDateTimeCheck" onchange="toggleDateTimeControls()">
+      <label for="scheduleDateTimeCheck">Programar per data i hora específica</label>
     </div>
     <div id="dateTimeInputs">
+      <label for="scheduledDateTime">Data i hora:</label>
       <input type="datetime-local" id="scheduledDateTime">
     </div>
   </div>
@@ -340,13 +417,48 @@
         checkbox.value = header;
         var label = document.createElement('label');
         label.htmlFor = 'attach_' + index;
-        label.textContent = ' ' + header;
-        label.style.display = 'inline';
-        label.style.fontWeight = 'normal';
+        label.textContent = header;
         div.appendChild(checkbox);
         div.appendChild(label);
         container.appendChild(div);
       });
+    }
+
+    function toggleAttachments() {
+      var content = document.getElementById('attachmentsCollapsible');
+      var header = event.target;
+      content.classList.toggle('active');
+      header.classList.toggle('active');
+    }
+
+    function toggleDelayControls() {
+      var checkbox = document.getElementById('scheduleDelayCheck');
+      var controls = document.getElementById('delayControls');
+      var dateTimeCheck = document.getElementById('scheduleDateTimeCheck');
+      
+      if (checkbox.checked) {
+        controls.style.display = 'block';
+        // Uncheck datetime option
+        dateTimeCheck.checked = false;
+        document.getElementById('dateTimeInputs').style.display = 'none';
+      } else {
+        controls.style.display = 'none';
+      }
+    }
+
+    function toggleDateTimeControls() {
+      var checkbox = document.getElementById('scheduleDateTimeCheck');
+      var controls = document.getElementById('dateTimeInputs');
+      var delayCheck = document.getElementById('scheduleDelayCheck');
+      
+      if (checkbox.checked) {
+        controls.style.display = 'block';
+        // Uncheck delay option
+        delayCheck.checked = false;
+        document.getElementById('delayControls').style.display = 'none';
+      } else {
+        controls.style.display = 'none';
+      }
     }
 
     function loadTagMapping() {
@@ -414,21 +526,6 @@
       document.getElementById('sendSection').style.display = 'block';
     }
 
-    // Enable/disable datetime inputs based on radio selection
-    document.addEventListener('DOMContentLoaded', function() {
-      var radioButtons = document.getElementsByName('scheduleType');
-      radioButtons.forEach(function(radio) {
-        radio.addEventListener('change', function() {
-          var dateTimeDiv = document.getElementById('dateTimeInputs');
-          if (this.value === 'datetime') {
-            dateTimeDiv.style.display = 'block';
-          } else {
-            dateTimeDiv.style.display = 'none';
-          }
-        });
-      });
-    });
-
     function sendMassEmails() {
       // Validate all inputs
       var sheetName = document.getElementById('sheetSelect').value;
@@ -459,22 +556,24 @@
       });
 
       // Get scheduling info
-      var scheduleType = document.querySelector('input[name="scheduleType"]:checked').value;
       var scheduleInfo = {};
+      var delayChecked = document.getElementById('scheduleDelayCheck').checked;
+      var dateTimeChecked = document.getElementById('scheduleDateTimeCheck').checked;
       
-      if (scheduleType === 'immediate') {
-        scheduleInfo.type = 'delay';
-        scheduleInfo.delayMinutes = 0;
-      } else if (scheduleType === 'delay') {
-        scheduleInfo.type = 'delay';
-        scheduleInfo.delayMinutes = parseInt(document.getElementById('delayMinutes').value);
-      } else {
+      if (dateTimeChecked) {
         scheduleInfo.type = 'datetime';
         scheduleInfo.datetime = document.getElementById('scheduledDateTime').value;
         if (!scheduleInfo.datetime) {
           showWarning('Selecciona una data i hora');
           return;
         }
+      } else if (delayChecked) {
+        scheduleInfo.type = 'delay';
+        scheduleInfo.delayMinutes = parseInt(document.getElementById('delayMinutes').value);
+      } else {
+        // Immediate send
+        scheduleInfo.type = 'delay';
+        scheduleInfo.delayMinutes = 0;
       }
 
       var config = {
