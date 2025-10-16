@@ -240,9 +240,13 @@
   <div class="section" id="schedulingSection" style="display:none;">
     <h3>6. Programació d'enviament</h3>
     <div class="schedule-options">
-      <input type="radio" id="scheduleDelay" name="scheduleType" value="delay" checked>
+      <input type="radio" id="scheduleImmediate" name="scheduleType" value="immediate" checked>
+      <label for="scheduleImmediate">Immediat (sense demora)</label>
+    </div>
+    <div class="schedule-options">
+      <input type="radio" id="scheduleDelay" name="scheduleType" value="delay">
       <label for="scheduleDelay">Demora (minuts):</label>
-      <input type="number" id="delayMinutes" value="5" min="0" step="1" style="width: 60px;">
+      <input type="number" id="delayMinutes" value="5" min="1" step="1" style="width: 60px;">
     </div>
     <div class="schedule-options">
       <input type="radio" id="scheduleDateTime" name="scheduleType" value="datetime">
@@ -458,7 +462,10 @@
       var scheduleType = document.querySelector('input[name="scheduleType"]:checked').value;
       var scheduleInfo = {};
       
-      if (scheduleType === 'delay') {
+      if (scheduleType === 'immediate') {
+        scheduleInfo.type = 'delay';
+        scheduleInfo.delayMinutes = 0;
+      } else if (scheduleType === 'delay') {
         scheduleInfo.type = 'delay';
         scheduleInfo.delayMinutes = parseInt(document.getElementById('delayMinutes').value);
       } else {
@@ -486,7 +493,17 @@
         google.script.run
           .withSuccessHandler(function(result) {
             showLoading(false);
-            showWarning('Correus programats correctament! S\'enviaran ' + result.count + ' correus.', 5000);
+            var message;
+            if (result.executionTime === 'Immediat') {
+              message = 'Correus enviats! ' + result.count + ' enviaments correctes';
+              if (result.errors > 0) {
+                message += ', ' + result.errors + ' errors';
+              }
+              message += '. Revisa la columna EMAIL_LOG.';
+            } else {
+              message = 'Correus programats correctament! S\'enviaran ' + result.count + ' correus.';
+            }
+            showWarning(message, 5000);
           })
           .withFailureHandler(function(error) {
             showLoading(false);

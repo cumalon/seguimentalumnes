@@ -11,6 +11,20 @@ function scheduleMassEmails(config) {
       throw new Error('Configuració incompleta');
     }
 
+    // Check if immediate send (delay = 0)
+    var isImmediate = config.scheduleInfo.type === 'delay' && config.scheduleInfo.delayMinutes === 0;
+    
+    if (isImmediate) {
+      // Send immediately without creating trigger
+      var result = sendMassEmailsNow(config);
+      return { 
+        success: true, 
+        count: result.successCount, 
+        executionTime: 'Immediat',
+        errors: result.errorCount
+      };
+    }
+
     // Store configuration in script properties for later execution
     var scriptProps = PropertiesService.getScriptProperties();
     var configKey = 'EMAIL_CONFIG_' + new Date().getTime();
@@ -147,8 +161,8 @@ function sendMassEmailsNow(config) {
 
       try {
         // Replace tags in subject and body
-        var personalizedSubject = replaceTags(config.subject, row, config.tagMapping, headerMap);
-        var personalizedBody = replaceTags(config.body, row, config.tagMapping, headerMap);
+        var personalizedSubject = replaceMailTags(config.subject, row, config.tagMapping, headerMap);
+        var personalizedBody = replaceMailTags(config.body, row, config.tagMapping, headerMap);
 
         // Get attachments
         var attachments = [];
@@ -199,7 +213,7 @@ function sendMassEmailsNow(config) {
 }
 
 // Function to replace tags in text with row data
-function replaceTags(text, rowData, tagMapping, headerMap) {
+function replaceMailTags(text, rowData, tagMapping, headerMap) {
   var result = text;
   
   tagMapping.forEach(function(mapping) {
