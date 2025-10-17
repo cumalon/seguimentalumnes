@@ -45,11 +45,25 @@ L'extensió permet enviar correus electrònics personalitzats de forma massiva a
 
 - **Personalització amb tags**: El cos del correu pot contenir tags en format `<<NomTag>>` que s'associen automàticament o manualment amb les capçaleres de la pestanya.
 
-- **Adjunts des d'URLs**: Es poden afegir adjunts indicant URLs en columnes específiques de la pestanya. Si l'URL apunta a un Google Doc, es converteix automàticament a PDF.
+- **Adjunts des d'URLs**: Es poden afegir adjunts indicant URLs en columnes específiques de la pestanya. El sistema converteix automàticament diversos formats a PDF:
+  - Google Docs → PDF
+  - MS Word (.doc, .docx) → PDF
+  - MS Excel (.xls, .xlsx) → PDF
+  - PDFs i altres fitxers s'envien tal qual
 
-- **Programació d'enviament**: Els correus es poden programar amb una demora (per defecte 5 minuts) o seleccionant una data i hora específiques.
+- **Programació d'enviament**: Els correus es poden enviar immediatament (per defecte), programar amb una demora o seleccionant una data i hora específiques.
+
+- **Control de quotes**: Abans d'enviar, el sistema verifica la quota diària disponible i mostra informació detallada per evitar errors.
 
 - **Registre d'enviaments**: L'estat de cada enviament es registra automàticament en una columna de log (`EMAIL_LOG`) a la pestanya de dades.
+
+### Requisits:
+
+**IMPORTANT**: Per convertir documents MS Word i Excel a PDF, cal activar la Drive API:
+
+1. A l'editor d'Apps Script, obre el menú "Serveis" (icona +)
+2. Cerca "Drive API" i activa-la
+3. També cal activar-la a Google Cloud Console si es demana
 
 ### Com utilitzar-ho:
 
@@ -59,10 +73,10 @@ L'extensió permet enviar correus electrònics personalitzats de forma massiva a
 4. Redacta l'assumpte i el cos del correu utilitzant tags (ex: `<<Nom>>`, `<<Nota>>`)
 5. Mapeja els tags amb les capçaleres corresponents de la pestanya
 6. Opcionalment, selecciona columnes amb URLs d'adjunts
-7. Configura quan s'enviarà el correu (demora o data/hora específica)
-8. Revisa i envia
+7. Configura quan s'enviarà el correu (immediat, demora o data/hora específica)
+8. Revisa la informació de quotes i envia
 
-Els correus s'enviaran automàticament segons la programació establerta i es registrarà l'estat de cada enviament a la columna `EMAIL_LOG`.
+Els correus s'enviaran segons la configuració establerta i es registrarà l'estat de cada enviament a la columna `EMAIL_LOG`.
 
 # Us de clasp
 

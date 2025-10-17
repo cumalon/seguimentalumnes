@@ -1,6 +1,10 @@
 /**
  * Mass Email Sender Module
  * Handles scheduling and sending of mass emails with attachments
+ * 
+ * IMPORTANT: This script requires the Drive API to be enabled
+ * To enable: In the Apps Script editor, go to Resources > Advanced Google Services
+ * and enable "Drive API". Also enable it in the Google Cloud Console.
  */
 
 // Function to check email and attachment quotas
@@ -374,20 +378,42 @@ function convertGoogleDocToPdf(docId) {
 // Function to convert MS Word document to PDF
 function convertWordToPdf(file) {
   try {
-    // Get the file blob and convert to PDF
-    var blob = file.getBlob();
-    var pdfBlob = blob.getAs(MimeType.PDF);
+    // For MS Word files, we need to convert to Google Docs first, then to PDF
+    // This is because blob.getAs(MimeType.PDF) doesn't work directly with Office formats
     
-    // Set a proper name for the PDF
     var fileName = file.getName();
+    var fileId = file.getId();
+    
+    // Create a temporary Google Doc from the Word file
+    var folderId = file.getParents().next().getId();
+    var folder = DriveApp.getFolderById(folderId);
+    
+    // Import the Word file as a Google Doc
+    var resource = {
+      title: fileName + '_temp',
+      mimeType: MimeType.GOOGLE_DOCS
+    };
+    
+    var blob = file.getBlob();
+    var doc = Drive.Files.insert(resource, blob, {convert: true});
+    
+    // Get the converted Google Doc and export as PDF
+    var tempDocId = doc.id;
+    var tempDoc = DocumentApp.openById(tempDocId);
+    var pdfBlob = tempDoc.getAs(MimeType.PDF);
+    
+    // Set proper PDF name
     var pdfName = fileName.replace(/\.(docx?|DOCX?)$/, '') + '.pdf';
     pdfBlob.setName(pdfName);
+    
+    // Delete the temporary Google Doc
+    DriveApp.getFileById(tempDocId).setTrashed(true);
     
     Logger.log('Converted Word document to PDF: ' + pdfName);
     return pdfBlob;
   } catch (error) {
     Logger.log('Error converting Word document to PDF: ' + error);
-    // If conversion fails, try to return the original file
+    // If conversion fails, return the original file
     try {
       return file.getBlob();
     } catch (e) {
@@ -400,20 +426,41 @@ function convertWordToPdf(file) {
 // Function to convert MS Excel spreadsheet to PDF
 function convertExcelToPdf(file) {
   try {
-    // Get the file blob and convert to PDF
-    var blob = file.getBlob();
-    var pdfBlob = blob.getAs(MimeType.PDF);
+    // For MS Excel files, we need to convert to Google Sheets first, then to PDF
     
-    // Set a proper name for the PDF
     var fileName = file.getName();
+    var fileId = file.getId();
+    
+    // Create a temporary Google Sheet from the Excel file
+    var folderId = file.getParents().next().getId();
+    var folder = DriveApp.getFolderById(folderId);
+    
+    // Import the Excel file as a Google Sheet
+    var resource = {
+      title: fileName + '_temp',
+      mimeType: MimeType.GOOGLE_SHEETS
+    };
+    
+    var blob = file.getBlob();
+    var sheet = Drive.Files.insert(resource, blob, {convert: true});
+    
+    // Get the converted Google Sheet and export as PDF
+    var tempSheetId = sheet.id;
+    var tempFile = DriveApp.getFileById(tempSheetId);
+    var pdfBlob = tempFile.getAs(MimeType.PDF);
+    
+    // Set proper PDF name
     var pdfName = fileName.replace(/\.(xlsx?|XLSX?)$/, '') + '.pdf';
     pdfBlob.setName(pdfName);
+    
+    // Delete the temporary Google Sheet
+    tempFile.setTrashed(true);
     
     Logger.log('Converted Excel spreadsheet to PDF: ' + pdfName);
     return pdfBlob;
   } catch (error) {
     Logger.log('Error converting Excel spreadsheet to PDF: ' + error);
-    // If conversion fails, try to return the original file
+    // If conversion fails, return the original file
     try {
       return file.getBlob();
     } catch (e) {
