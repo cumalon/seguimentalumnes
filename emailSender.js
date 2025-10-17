@@ -302,7 +302,6 @@ function getAttachmentFromUrl(url) {
     var docMatch = url.match(/docs\.google\.com\/document\/d\/([a-zA-Z0-9-_]+)/);
     if (docMatch) {
       fileId = docMatch[1];
-      return convertGoogleDocToPdf(fileId);
     }
     
     // Check if it's a Google Drive file URL (various formats)
