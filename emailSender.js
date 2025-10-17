@@ -289,38 +289,68 @@ function replaceMailTags(text, rowData, tagMapping, headerMap) {
   return result;
 }
 
-// Function to get attachment from URL (converts Google Docs to PDF)
+// Function to get attachment from URL (converts Google Docs and MS Word to PDF)
 function getAttachmentFromUrl(url) {
   try {
-    // Check if it's a Google Doc
+    var fileId = null;
+    
+    // Check if it's a Google Doc URL
     var docMatch = url.match(/docs\.google\.com\/document\/d\/([a-zA-Z0-9-_]+)/);
     if (docMatch) {
-      var docId = docMatch[1];
-      return convertGoogleDocToPdf(docId);
+      fileId = docMatch[1];
+      return convertGoogleDocToPdf(fileId);
     }
-
-    // Check if it's a Google Drive file
+    
+    // Check if it's a Google Drive file URL (various formats)
     var driveMatch = url.match(/drive\.google\.com\/.*[?&]id=([a-zA-Z0-9-_]+)/);
     if (driveMatch) {
-      var fileId = driveMatch[1];
-      var file = DriveApp.getFileById(fileId);
-      return file.getAs(MimeType.PDF);
+      fileId = driveMatch[1];
+    } else {
+      // Try to match /file/d/{id}/ format
+      var fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+      if (fileMatch) {
+        fileId = fileMatch[1];
+      } else {
+        // Try to match open?id={id} format
+        var openMatch = url.match(/open\?id=([a-zA-Z0-9-_]+)/);
+        if (openMatch) {
+          fileId = openMatch[1];
+        }
+      }
     }
-
-    // Try to get file by extracting ID
-    var fileId = extractFileId(url);
+    
+    // If we found a file ID, process the file
     if (fileId) {
       var file = DriveApp.getFileById(fileId);
+      var mimeType = file.getMimeType();
+      
+      Logger.log('Processing file: ' + file.getName() + ' with MIME type: ' + mimeType);
       
       // Convert Google Docs to PDF
-      if (file.getMimeType() === MimeType.GOOGLE_DOCS) {
+      if (mimeType === MimeType.GOOGLE_DOCS) {
         return convertGoogleDocToPdf(fileId);
       }
       
-      // Return other files as-is
+      // Convert MS Word documents to PDF
+      if (mimeType === MimeType.MICROSOFT_WORD || 
+          mimeType === MimeType.MICROSOFT_WORD_LEGACY ||
+          mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+          mimeType === 'application/msword') {
+        return convertWordToPdf(file);
+      }
+      
+      // Convert MS Excel to PDF
+      if (mimeType === MimeType.MICROSOFT_EXCEL || 
+          mimeType === MimeType.MICROSOFT_EXCEL_LEGACY ||
+          mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+          mimeType === 'application/vnd.ms-excel') {
+        return convertExcelToPdf(file);
+      }
+      
+      // For PDFs and other files, return as-is
       return file.getBlob();
     }
-
+    
     return null;
   } catch (error) {
     Logger.log('Error getting attachment from URL ' + url + ': ' + error);
@@ -338,6 +368,58 @@ function convertGoogleDocToPdf(docId) {
   } catch (error) {
     Logger.log('Error converting Google Doc to PDF: ' + error);
     return null;
+  }
+}
+
+// Function to convert MS Word document to PDF
+function convertWordToPdf(file) {
+  try {
+    // Get the file blob and convert to PDF
+    var blob = file.getBlob();
+    var pdfBlob = blob.getAs(MimeType.PDF);
+    
+    // Set a proper name for the PDF
+    var fileName = file.getName();
+    var pdfName = fileName.replace(/\.(docx?|DOCX?)$/, '') + '.pdf';
+    pdfBlob.setName(pdfName);
+    
+    Logger.log('Converted Word document to PDF: ' + pdfName);
+    return pdfBlob;
+  } catch (error) {
+    Logger.log('Error converting Word document to PDF: ' + error);
+    // If conversion fails, try to return the original file
+    try {
+      return file.getBlob();
+    } catch (e) {
+      Logger.log('Error getting original file blob: ' + e);
+      return null;
+    }
+  }
+}
+
+// Function to convert MS Excel spreadsheet to PDF
+function convertExcelToPdf(file) {
+  try {
+    // Get the file blob and convert to PDF
+    var blob = file.getBlob();
+    var pdfBlob = blob.getAs(MimeType.PDF);
+    
+    // Set a proper name for the PDF
+    var fileName = file.getName();
+    var pdfName = fileName.replace(/\.(xlsx?|XLSX?)$/, '') + '.pdf';
+    pdfBlob.setName(pdfName);
+    
+    Logger.log('Converted Excel spreadsheet to PDF: ' + pdfName);
+    return pdfBlob;
+  } catch (error) {
+    Logger.log('Error converting Excel spreadsheet to PDF: ' + error);
+    // If conversion fails, try to return the original file
+    try {
+      return file.getBlob();
+    } catch (e) {
+      Logger.log('Error getting original file blob: ' + e);
+      return null;
+    }
   }
 }
 
