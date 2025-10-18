@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      padding: 10px;
+      margin: 0;
+    }
+
+    h2, h3 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .section {
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    select, input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+      font-family: 'Courier New', monospace;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 5px;
+      margin-top: 5px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .button-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+      font-weight: bold;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    #loadingOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9998;
+      flex-direction: column;
+    }
+
+    #loadingContent {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 400px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    #loadingContent h3 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .quota-info {
+      margin: 15px 0;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      text-align: left;
+    }
+
+    .quota-info div {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    .quota-label {
+      font-weight: bold;
+      color: #555;
+    }
+
+    .quota-value {
+      color: #333;
+      margin-left: 5px;
+    }
+
+    .quota-exceeded {
+      color: #f44336;
+      font-weight: bold;
+    }
+
+    .quota-ok {
+      color: #4CAF50;
+      font-weight: bold;
+    }
+
+    #warningMessage {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: white;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .checkbox-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 5px;
+      background-color: white;
+    }
+
+    .checkbox-item {
+      padding: 3px;
+    }
+
+    .info-text {
+      font-size: 12px;
+      color: #666;
+      font-style: italic;
+      margin-top: -5px;
+      margin-bottom: 10px;
+    }
+
+    .schedule-options {
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .schedule-options label {
+      font-weight: normal;
+      cursor: pointer;
+    }
+
+    .schedule-options input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .schedule-options input[type="number"] {
+      width: 80px;
+      display: inline-block;
+      margin-left: 5px;
+      margin-bottom: 0;
+      vertical-align: middle;
+    }
+
+    #delayControls, #dateTimeInputs {
+      display: none;
+      margin-left: 25px;
+      margin-top: 5px;
+    }
+
+    .collapsible-header {
+      cursor: pointer;
+      padding: 8px;
+      background-color: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 5px;
+      user-select: none;
+    }
+
+    .collapsible-header:hover {
+      background-color: #e8e8e8;
+    }
+
+    .collapsible-header::before {
+      content: '▶ ';
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .collapsible-header.active::before {
+      transform: rotate(90deg);
+    }
+
+    .collapsible-content {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .collapsible-content.active {
+      display: block;
+    }
+
+    .checkbox-item {
+      padding: 5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    .checkbox-item label {
+      margin: 0;
+      font-weight: normal;
+      flex-grow: 1;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loadingOverlay">
+    <div id="loadingContent">
+      <div id="loadingSpinner">
+        <img src="https://i.gifer.com/bfR.gif" alt="loading" style="width: 50px; height: 50px;" />
+      </div>
+      <h3 id="loadingTitle">Processant enviament...</h3>
+      <div id="quotaInfoDisplay" class="quota-info" style="display:none;">
+        <div><span class="quota-label">Correus a enviar:</span><span class="quota-value" id="emailsToSend">-</span></div>
+        <div><span class="quota-label">Quota disponible:</span><span class="quota-value" id="quotaRemaining">-</span></div>
+        <div><span class="quota-label">Adjunts per correu:</span><span class="quota-value" id="attachmentsPerEmail">-</span></div>
+        <div><span class="quota-label">Total adjunts:</span><span class="quota-value" id="totalAttachments">-</span></div>
+        <div id="quotaStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="warningMessage"></div>
+
+  <h2>Enviament massiu de correus</h2>
+
+  <!-- Section 1: Sheet Selection -->
+  <div class="section">
+    <h3>1. Selecciona la pestanya</h3>
+    <label for="sheetSelect">Pestanya:</label>
+    <select id="sheetSelect">
+      <option value="">--Selecciona una pestanya--</option>
+    </select>
+    
+    <label for="headerRowIndex">#Fila de capçalera:</label>
+    <input type="number" id="headerRowIndex" value="1" min="1" step="1">
+    
+    <button onclick="loadSheetHeaders()">Carregar capçaleres</button>
+  </div>
+
+  <!-- Section 2: Email Body -->
+  <div class="section" id="emailBodySection" style="display:none;">
+    <h3>2. Cos del correu</h3>
+    <p class="info-text">Els destinataris s'obtenen de la columna <strong>EMAIL</strong> (obligatòria). 
+    Opcionalment pots afegir <strong>EMAIL_CC</strong> i/o <strong>EMAIL_BCC</strong>. 
+    Pots indicar múltiples emails separats per comes (,) o punt i coma (;).</p>
+    <label for="emailSubject">Assumpte:</label>
+    <input type="text" id="emailSubject" placeholder="Assumpte del correu">
+    
+    <label for="emailBody">Cos del missatge (utilitza &lt;&lt;NomTag&gt;&gt; per camps):</label>
+    <textarea id="emailBody" placeholder="Escriu el cos del correu aquí. Utilitza <<NomTag>> per personalitzar amb les dades de cada fila."></textarea>
+    <p class="info-text">Exemple: Hola &lt;&lt;Nom&gt;&gt;, el teu resultat és &lt;&lt;Nota&gt;&gt;</p>
+    
+    <button onclick="loadTagMapping()">Següent: Mapeja tags</button>
+  </div>
+
+  <!-- Section 3: Tag Mapping -->
+  <div class="section" id="tagMappingSection" style="display:none;">
+    <h3>3. Mapeja tags amb capçaleres</h3>
+    <div id="tagMappingContainer">
+      <table id="tagMappingTable">
+        <thead>
+          <tr>
+            <th>Tag</th>
+            <th>Capçalera</th>
+          </tr>
+        </thead>
+        <tbody id="tagMappingTableBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section 4: Attachments -->
+  <div class="section" id="attachmentsSection" style="display:none;">
+    <h3>4. Adjunts (opcional)</h3>
+    <div class="collapsible-header" onclick="toggleAttachments()">
+      Selecció d'adjunts
+    </div>
+    <div id="attachmentsCollapsible" class="collapsible-content">
+      <div id="attachmentColumnsList" class="checkbox-list">
+      </div>
+      <p class="info-text">Els Google Docs, MS Word i Excel es convertiran automàticament a PDF</p>
+    </div>
+  </div>
+
+  <!-- Section 5: Scheduling -->
+  <div class="section" id="schedulingSection" style="display:none;">
+    <h3>5. Programació d'enviament</h3>
+    <p class="info-text">Per defecte, els correus s'enviaran immediatament</p>
+    
+    <div class="schedule-options">
+      <input type="checkbox" id="scheduleDelayCheck" onchange="toggleDelayControls()">
+      <label for="scheduleDelayCheck">Programar amb demora</label>
+    </div>
+    <div id="delayControls">
+      <label for="delayMinutes">Minuts de demora:</label>
+      <input type="number" id="delayMinutes" value="5" min="1" step="1">
+    </div>
+    
+    <div class="schedule-options">
+      <input type="checkbox" id="scheduleDateTimeCheck" onchange="toggleDateTimeControls()">
+      <label for="scheduleDateTimeCheck">Programar per data i hora específica</label>
+    </div>
+    <div id="dateTimeInputs">
+      <label for="scheduledDateTime">Data i hora:</label>
+      <input type="datetime-local" id="scheduledDateTime">
+    </div>
+  </div>
+
+  <!-- Section 6: Send -->
+  <div class="section" id="sendSection" style="display:none;">
+    <h3>6. Enviar correus</h3>
+    <p class="info-text">Revisa la configuració abans d'enviar</p>
+    <div class="button-container">
+      <button onclick="sendMassEmails()" style="background-color: #f44336;">
+        <i class="fas fa-paper-plane"></i> Enviar correus
+      </button>
+    </div>
+  </div>
+
+  <script>
+    var availableHeaders = [];
+    var emailTags = [];
+
+    function initEmailSidebar(data) {
+      var select = document.getElementById('sheetSelect');
+      data.sheets.forEach(function(sheet) {
+        var option = document.createElement('option');
+        option.value = sheet;
+        option.text = sheet;
+        if(sheet === data.selected) option.selected = true;
+        select.appendChild(option);
+      });
+    }
+
+    function loadSheetHeaders() {
+      var sheetName = document.getElementById('sheetSelect').value;
+      var headerRowIndex = document.getElementById('headerRowIndex').value;
+      
+      if (!sheetName) {
+        showWarning('Selecciona una pestanya primer');
+        return;
+      }
+
+      showLoading(true);
+      google.script.run
+        .withSuccessHandler(function(headers) {
+          availableHeaders = headers;
+          
+          // Check if EMAIL column exists
+          if (headers.indexOf('EMAIL') === -1) {
+            showWarning('Error: La pestanya ha de tenir una columna amb nom "EMAIL"');
+            showLoading(false);
+            return;
+          }
+          
+          populateAttachmentColumnsList(headers);
+          document.getElementById('emailBodySection').style.display = 'block';
+          document.getElementById('attachmentsSection').style.display = 'block';
+          document.getElementById('schedulingSection').style.display = 'block';
+          showLoading(false);
+        })
+        .withFailureHandler(function(error) {
+          showWarning('Error carregant capçaleres: ' + error.message);
+          showLoading(false);
+        })
+        .carregarCapcaleres(sheetName, parseInt(headerRowIndex));
+    }
+
+
+
+    function populateAttachmentColumnsList(headers) {
+      var container = document.getElementById('attachmentColumnsList');
+      container.innerHTML = '';
+      
+      headers.forEach(function(header, index) {
+        var div = document.createElement('div');
+        div.className = 'checkbox-item';
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = 'attach_' + index;
+        checkbox.value = header;
+        var label = document.createElement('label');
+        label.htmlFor = 'attach_' + index;
+        label.textContent = header;
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        container.appendChild(div);
+      });
+    }
+
+    function toggleAttachments() {
+      var content = document.getElementById('attachmentsCollapsible');
+      var header = event.target;
+      content.classList.toggle('active');
+      header.classList.toggle('active');
+    }
+
+    function toggleDelayControls() {
+      var checkbox = document.getElementById('scheduleDelayCheck');
+      var controls = document.getElementById('delayControls');
+      var dateTimeCheck = document.getElementById('scheduleDateTimeCheck');
+      
+      if (checkbox.checked) {
+        controls.style.display = 'block';
+        // Uncheck datetime option
+        dateTimeCheck.checked = false;
+        document.getElementById('dateTimeInputs').style.display = 'none';
+      } else {
+        controls.style.display = 'none';
+      }
+    }
+
+    function toggleDateTimeControls() {
+      var checkbox = document.getElementById('scheduleDateTimeCheck');
+      var controls = document.getElementById('dateTimeInputs');
+      var delayCheck = document.getElementById('scheduleDelayCheck');
+      
+      if (checkbox.checked) {
+        controls.style.display = 'block';
+        // Uncheck delay option
+        delayCheck.checked = false;
+        document.getElementById('delayControls').style.display = 'none';
+      } else {
+        controls.style.display = 'none';
+      }
+    }
+
+    function loadTagMapping() {
+      var emailSubject = document.getElementById('emailSubject').value;
+      var emailBody = document.getElementById('emailBody').value;
+      
+      if (!emailBody.trim()) {
+        showWarning('Escriu el cos del correu primer');
+        return;
+      }
+
+      // Extract tags from both email subject and body
+      var tagPattern = /<<(.*?)>>/g;
+      var matches;
+      emailTags = [];
+      
+      // Extract from subject
+      while ((matches = tagPattern.exec(emailSubject)) !== null) {
+        var tag = matches[1].trim();
+        if (emailTags.indexOf(tag) === -1) {
+          emailTags.push(tag);
+        }
+      }
+      
+      // Reset regex lastIndex before reusing
+      tagPattern.lastIndex = 0;
+      
+      // Extract from body
+      while ((matches = tagPattern.exec(emailBody)) !== null) {
+        var tag = matches[1].trim();
+        if (emailTags.indexOf(tag) === -1) {
+          emailTags.push(tag);
+        }
+      }
+
+      if (emailTags.length === 0) {
+        showWarning('No s\'han trobat tags ni a l\'assumpte ni al cos del correu. Utilitza el format <<NomTag>>');
+        return;
+      }
+
+      // Build tag mapping table
+      var tbody = document.getElementById('tagMappingTableBody');
+      tbody.innerHTML = '';
+
+      emailTags.forEach(function(tag, index) {
+        var row = document.createElement('tr');
+        
+        var tagCell = document.createElement('td');
+        tagCell.textContent = tag;
+        
+        var selectCell = document.createElement('td');
+        var select = document.createElement('select');
+        select.id = 'tagMap_' + index;
+        
+        var defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.text = '--';
+        select.appendChild(defaultOption);
+        
+        availableHeaders.forEach(function(header) {
+          var option = document.createElement('option');
+          option.value = header;
+          option.text = header;
+          // Auto-map if tag matches header
+          if (tag === header) {
+            option.selected = true;
+          }
+          select.appendChild(option);
+        });
+        
+        selectCell.appendChild(select);
+        row.appendChild(tagCell);
+        row.appendChild(selectCell);
+        tbody.appendChild(row);
+      });
+
+      document.getElementById('tagMappingSection').style.display = 'block';
+      document.getElementById('sendSection').style.display = 'block';
+    }
+
+    function sendMassEmails() {
+      // Validate all inputs
+      var sheetName = document.getElementById('sheetSelect').value;
+      var headerRowIndex = parseInt(document.getElementById('headerRowIndex').value);
+      var emailSubject = document.getElementById('emailSubject').value;
+      var emailBody = document.getElementById('emailBody').value;
+
+      if (!sheetName || !emailSubject.trim() || !emailBody.trim()) {
+        showWarning('Omple tots els camps obligatoris');
+        return;
+      }
+
+      // Build tag mapping
+      var tagMapping = [];
+      emailTags.forEach(function(tag, index) {
+        var header = document.getElementById('tagMap_' + index).value;
+        if (header) {
+          tagMapping.push({ tag: tag, header: header });
+        }
+      });
+
+      // Get attachment columns
+      var attachmentColumns = [];
+      var checkboxes = document.querySelectorAll('#attachmentColumnsList input[type="checkbox"]:checked');
+      checkboxes.forEach(function(checkbox) {
+        attachmentColumns.push(checkbox.value);
+      });
+
+      // Get scheduling info
+      var scheduleInfo = {};
+      var delayChecked = document.getElementById('scheduleDelayCheck').checked;
+      var dateTimeChecked = document.getElementById('scheduleDateTimeCheck').checked;
+      
+      if (dateTimeChecked) {
+        scheduleInfo.type = 'datetime';
+        scheduleInfo.datetime = document.getElementById('scheduledDateTime').value;
+        if (!scheduleInfo.datetime) {
+          showWarning('Selecciona una data i hora');
+          return;
+        }
+      } else if (delayChecked) {
+        scheduleInfo.type = 'delay';
+        scheduleInfo.delayMinutes = parseInt(document.getElementById('delayMinutes').value);
+      } else {
+        // Immediate send
+        scheduleInfo.type = 'delay';
+        scheduleInfo.delayMinutes = 0;
+      }
+
+      var config = {
+        sheetName: sheetName,
+        headerRowIndex: headerRowIndex,
+        subject: emailSubject,
+        body: emailBody,
+        tagMapping: tagMapping,
+        attachmentColumns: attachmentColumns,
+        scheduleInfo: scheduleInfo
+      };
+
+      if (confirm('Estàs segur que vols enviar els correus?')) {
+        showLoading(true);
+        google.script.run
+          .withSuccessHandler(function(result) {
+            // Display quota information
+            displayQuotaInfo(result.quotaInfo);
+            
+            // Check if quota exceeded
+            if (!result.success && result.quotaInfo && result.quotaInfo.quotaExceeded) {
+              showLoading(false);
+              showWarning('Quota diària excedida! No pots enviar ' + result.quotaInfo.emailsToSend + ' correus. Quota disponible: ' + result.quotaInfo.emailQuotaRemaining, 8000);
+              return;
+            }
+            
+            // Wait a bit to show quota info, then hide loading and show success message
+            setTimeout(function() {
+              showLoading(false);
+              var message;
+              if (result.executionTime === 'Immediat') {
+                message = 'Correus enviats! ' + result.count + ' enviaments correctes';
+                if (result.errors > 0) {
+                  message += ', ' + result.errors + ' errors';
+                }
+                message += '. Revisa la columna EMAIL_LOG.';
+              } else {
+                message = 'Correus programats correctament! S\'enviaran ' + result.count + ' correus.';
+              }
+              showWarning(message, 5000);
+            }, 3000); // Show quota info for 3 seconds
+          })
+          .withFailureHandler(function(error) {
+            showLoading(false);
+            showWarning('Error programant l\'enviament: ' + error.message);
+          })
+          .scheduleMassEmails(config);
+      }
+    }
+
+    function displayQuotaInfo(quotaInfo) {
+      if (!quotaInfo) return;
+      
+      document.getElementById('emailsToSend').textContent = quotaInfo.emailsToSend;
+      document.getElementById('quotaRemaining').textContent = quotaInfo.emailQuotaRemaining;
+      document.getElementById('attachmentsPerEmail').textContent = quotaInfo.attachmentsPerEmail;
+      document.getElementById('totalAttachments').textContent = quotaInfo.totalAttachments;
+      
+      var statusDiv = document.getElementById('quotaStatus');
+      if (quotaInfo.canProceed) {
+        statusDiv.innerHTML = '<span class="quota-ok">✓ Quota suficient per enviar els correus</span>';
+      } else {
+        statusDiv.innerHTML = '<span class="quota-exceeded">✗ Quota insuficient</span>';
+      }
+      
+      document.getElementById('quotaInfoDisplay').style.display = 'block';
+      document.getElementById('loadingTitle').textContent = 'Informació de quota';
+    }
+
+    function showLoading(show) {
+      var overlay = document.getElementById('loadingOverlay');
+      if (show) {
+        // Reset quota display
+        document.getElementById('quotaInfoDisplay').style.display = 'none';
+        document.getElementById('loadingTitle').textContent = 'Processant enviament...';
+        document.getElementById('loadingSpinner').style.display = 'block';
+        overlay.style.display = 'flex';
+      } else {
+        overlay.style.display = 'none';
+      }
+    }
+
+    function showWarning(message, timeout) {
+      timeout = timeout || 3000;
+      var warningElement = document.getElementById('warningMessage');
+      warningElement.textContent = message;
+      warningElement.style.display = 'flex';
+      setTimeout(function() {
+        warningElement.style.display = 'none';
+      }, timeout);
+    }
+  </script>
+</body>
+</html>

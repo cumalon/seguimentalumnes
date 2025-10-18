@@ -2,9 +2,10 @@
 
 Aquest projecte consisteix en una extensió de fulls de càlcul de Google.
 
-L'extensió té dues funcionalitats principals:
+L'extensió té tres funcionalitats principals:
 - Generar informes a partir de les dades d'un full de càlcul. 
 - Visualització dels informes en una webapp.
+- Enviament massiu de correus personalitzats amb adjunts.
 
 Els informes són documents de text de Google.
 
@@ -35,6 +36,62 @@ Les dades d'un merge han d'estar totes elles en una sola pestanya del full de c�
 
 Els informes accessibles des de la webapp es llisten a una taula de dades del full amb noma **webapp** (cal veure exemples). Aquest mateix full també conté la taula d'usuaris Google amb accés admin i la taula amb els Cognoms, Nom que es podran seleccionar des de la visualització admin.
 
+
+## Enviament massiu de correus
+
+L'extensió permet enviar correus electrònics personalitzats de forma massiva a partir d'una pestanya de dades del full de càlcul.
+
+### Característiques principals:
+
+- **Destinataris amb columnes reservades**: 
+  - **EMAIL** (obligatòria): Columna amb els destinataris principals
+  - **EMAIL_CC** (opcional): Columna amb còpies visibles
+  - **EMAIL_BCC** (opcional): Columna amb còpies ocultes
+  - Cada cel·la pot contenir múltiples adreces separades per comes (,) o punt i coma (;)
+
+- **Personalització amb tags**: El cos del correu pot contenir tags en format `<<NomTag>>` que s'associen automàticament o manualment amb les capçaleres de la pestanya.
+
+- **Adjunts des d'URLs**: Es poden afegir adjunts indicant URLs en columnes específiques de la pestanya. El sistema converteix automàticament diversos formats a PDF:
+  - Google Docs → PDF
+  - MS Word (.doc, .docx) → PDF
+  - MS Excel (.xls, .xlsx) → PDF
+  - PDFs i altres fitxers s'envien tal qual
+
+- **Programació d'enviament**: Els correus es poden enviar immediatament (per defecte), programar amb una demora o seleccionant una data i hora específiques.
+
+- **Control de quotes**: Abans d'enviar, el sistema verifica la quota diària disponible i mostra informació detallada per evitar errors.
+
+- **Registre d'enviaments**: L'estat de cada enviament es registra automàticament en una columna de log (`EMAIL_LOG`) a la pestanya de dades.
+
+### Requisits:
+
+**IMPORTANT**: Per convertir documents MS Word i Excel a PDF, cal activar la Drive API:
+
+1. A l'editor d'Apps Script, obre el menú "Serveis" (icona +)
+2. Cerca "Drive API" i activa-la
+3. També cal activar-la a Google Cloud Console si es demana
+
+### Com utilitzar-ho:
+
+#### Preparació de la pestanya:
+
+1. Crea una columna anomenada **EMAIL** amb les adreces dels destinataris (obligatòria)
+2. Opcionalment, crea columnes **EMAIL_CC** i/o **EMAIL_BCC** per còpies
+3. Cada cel·la pot contenir múltiples emails separats per comes o punt i coma:
+   - Exemple: `joan@example.com, maria@example.com`
+   - Exemple: `pere@example.com; anna@example.com`
+
+#### Enviament:
+
+1. Obre el menú "Alumnes" i selecciona "Enviament massiu"
+2. Selecciona la pestanya de dades i indica la fila de capçalera
+3. Redacta l'assumpte i el cos del correu utilitzant tags (ex: `<<Nom>>`, `<<Nota>>`)
+4. Mapeja els tags amb les capçaleres corresponents de la pestanya
+5. Opcionalment, selecciona columnes amb URLs d'adjunts
+6. Configura quan s'enviarà el correu (immediat, demora o data/hora específica)
+7. Revisa la informació de quotes i envia
+
+Els correus s'enviaran segons la configuració establerta i es registrarà l'estat de cada enviament a la columna `EMAIL_LOG`.
 
 # Us de clasp
 
