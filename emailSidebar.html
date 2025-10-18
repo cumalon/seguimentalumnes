@@ -506,6 +506,7 @@
     }
 
     function loadTagMapping() {
+      var emailSubject = document.getElementById('emailSubject').value;
       var emailBody = document.getElementById('emailBody').value;
       
       if (!emailBody.trim()) {
@@ -513,11 +514,23 @@
         return;
       }
 
-      // Extract tags from email body
+      // Extract tags from both email subject and body
       var tagPattern = /<<(.*?)>>/g;
       var matches;
       emailTags = [];
       
+      // Extract from subject
+      while ((matches = tagPattern.exec(emailSubject)) !== null) {
+        var tag = matches[1].trim();
+        if (emailTags.indexOf(tag) === -1) {
+          emailTags.push(tag);
+        }
+      }
+      
+      // Reset regex lastIndex before reusing
+      tagPattern.lastIndex = 0;
+      
+      // Extract from body
       while ((matches = tagPattern.exec(emailBody)) !== null) {
         var tag = matches[1].trim();
         if (emailTags.indexOf(tag) === -1) {
@@ -526,7 +539,7 @@
       }
 
       if (emailTags.length === 0) {
-        showWarning('No s\'han trobat tags en el cos del correu. Utilitza el format <<NomTag>>');
+        showWarning('No s\'han trobat tags ni a l\'assumpte ni al cos del correu. Utilitza el format <<NomTag>>');
         return;
       }
 
