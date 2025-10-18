@@ -43,6 +43,12 @@ L'extensió permet enviar correus electrònics personalitzats de forma massiva a
 
 ### Característiques principals:
 
+- **Destinataris amb columnes reservades**: 
+  - **EMAIL** (obligatòria): Columna amb els destinataris principals
+  - **EMAIL_CC** (opcional): Columna amb còpies visibles
+  - **EMAIL_BCC** (opcional): Columna amb còpies ocultes
+  - Cada cel·la pot contenir múltiples adreces separades per comes (,) o punt i coma (;)
+
 - **Personalització amb tags**: El cos del correu pot contenir tags en format `<<NomTag>>` que s'associen automàticament o manualment amb les capçaleres de la pestanya.
 
 - **Adjunts des d'URLs**: Es poden afegir adjunts indicant URLs en columnes específiques de la pestanya. El sistema converteix automàticament diversos formats a PDF:
@@ -67,14 +73,23 @@ L'extensió permet enviar correus electrònics personalitzats de forma massiva a
 
 ### Com utilitzar-ho:
 
+#### Preparació de la pestanya:
+
+1. Crea una columna anomenada **EMAIL** amb les adreces dels destinataris (obligatòria)
+2. Opcionalment, crea columnes **EMAIL_CC** i/o **EMAIL_BCC** per còpies
+3. Cada cel·la pot contenir múltiples emails separats per comes o punt i coma:
+   - Exemple: `joan@example.com, maria@example.com`
+   - Exemple: `pere@example.com; anna@example.com`
+
+#### Enviament:
+
 1. Obre el menú "Alumnes" i selecciona "Enviament massiu"
 2. Selecciona la pestanya de dades i indica la fila de capçalera
-3. Escull la columna que conté els emails dels destinataris
-4. Redacta l'assumpte i el cos del correu utilitzant tags (ex: `<<Nom>>`, `<<Nota>>`)
-5. Mapeja els tags amb les capçaleres corresponents de la pestanya
-6. Opcionalment, selecciona columnes amb URLs d'adjunts
-7. Configura quan s'enviarà el correu (immediat, demora o data/hora específica)
-8. Revisa la informació de quotes i envia
+3. Redacta l'assumpte i el cos del correu utilitzant tags (ex: `<<Nom>>`, `<<Nota>>`)
+4. Mapeja els tags amb les capçaleres corresponents de la pestanya
+5. Opcionalment, selecciona columnes amb URLs d'adjunts
+6. Configura quan s'enviarà el correu (immediat, demora o data/hora específica)
+7. Revisa la informació de quotes i envia
 
 Els correus s'enviaran segons la configuració establerta i es registrarà l'estat de cada enviament a la columna `EMAIL_LOG`.
 

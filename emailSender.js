@@ -12,7 +12,12 @@ function checkEmailQuotas(config) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(config.sheetName);
     var data = sheet.getDataRange().getValues();
-    var emailColumnIndex = data[config.headerRowIndex - 1].indexOf(config.emailColumn);
+    var headers = data[config.headerRowIndex - 1];
+    var emailColumnIndex = headers.indexOf('EMAIL');
+    
+    if (emailColumnIndex === -1) {
+      throw new Error('No s\'ha trobat la columna EMAIL');
+    }
     
     // Count emails to send
     var emailCount = 0;
@@ -166,10 +171,13 @@ function sendMassEmailsNow(config) {
     var data = sheet.getDataRange().getValues();
     var headers = data[config.headerRowIndex - 1];
     
-    // Find column indices
-    var emailColumnIndex = headers.indexOf(config.emailColumn);
+    // Find column indices for EMAIL (required), EMAIL_CC and EMAIL_BCC (optional)
+    var emailColumnIndex = headers.indexOf('EMAIL');
+    var emailCcColumnIndex = headers.indexOf('EMAIL_CC');
+    var emailBccColumnIndex = headers.indexOf('EMAIL_BCC');
+    
     if (emailColumnIndex === -1) {
-      throw new Error('Columna d\'email no trobada: ' + config.emailColumn);
+      throw new Error('Columna EMAIL no trobada. Cal una columna amb el nom exacte "EMAIL"');
     }
 
     // Find or create log column
@@ -203,15 +211,35 @@ function sendMassEmailsNow(config) {
 
     for (var i = config.headerRowIndex; i < data.length; i++) {
       var row = data[i];
-      var email = row[emailColumnIndex];
+      var emailValue = row[emailColumnIndex];
       
-      if (!email || !isValidEmail(email)) {
-        sheet.getRange(i + 1, logColumnIndex + 1).setValue('Error: Email invàlid');
+      if (!emailValue || !String(emailValue).trim()) {
+        sheet.getRange(i + 1, logColumnIndex + 1).setValue('Error: Email buit');
         errorCount++;
         continue;
       }
 
       try {
+        // Parse email addresses (can be comma or semicolon separated)
+        var emails = parseEmailAddresses(String(emailValue));
+        if (emails.length === 0) {
+          sheet.getRange(i + 1, logColumnIndex + 1).setValue('Error: Email invàlid');
+          errorCount++;
+          continue;
+        }
+        
+        // Parse CC emails if present
+        var ccEmails = [];
+        if (emailCcColumnIndex !== -1 && row[emailCcColumnIndex]) {
+          ccEmails = parseEmailAddresses(String(row[emailCcColumnIndex]));
+        }
+        
+        // Parse BCC emails if present
+        var bccEmails = [];
+        if (emailBccColumnIndex !== -1 && row[emailBccColumnIndex]) {
+          bccEmails = parseEmailAddresses(String(row[emailBccColumnIndex]));
+        }
+
         // Replace tags in subject and body
         var personalizedSubject = replaceMailTags(config.subject, row, config.tagMapping, headerMap);
         var personalizedBody = replaceMailTags(config.body, row, config.tagMapping, headerMap);
@@ -232,21 +260,34 @@ function sendMassEmailsNow(config) {
           }
         });
 
-        // Send email
+        // Build email options
         var emailOptions = {
           name: 'Enviament massiu',
           attachments: attachments
         };
+        
+        if (ccEmails.length > 0) {
+          emailOptions.cc = ccEmails.join(',');
+        }
+        
+        if (bccEmails.length > 0) {
+          emailOptions.bcc = bccEmails.join(',');
+        }
 
-        MailApp.sendEmail(email, personalizedSubject, personalizedBody, emailOptions);
+        // Send email (main recipient is first email, rest are added to the list)
+        var mainEmail = emails.join(',');
+        MailApp.sendEmail(mainEmail, personalizedSubject, personalizedBody, emailOptions);
         
         // Log success
         var timestamp = new Date().toLocaleString('ca-ES');
-        sheet.getRange(i + 1, logColumnIndex + 1).setValue('Enviat: ' + timestamp);
+        var logMessage = 'Enviat: ' + timestamp;
+        if (ccEmails.length > 0) logMessage += ' (CC: ' + ccEmails.length + ')';
+        if (bccEmails.length > 0) logMessage += ' (BCC: ' + bccEmails.length + ')';
+        sheet.getRange(i + 1, logColumnIndex + 1).setValue(logMessage);
         successCount++;
 
       } catch (emailError) {
-        Logger.log('Error sending email to ' + email + ': ' + emailError);
+        Logger.log('Error sending email to ' + emailValue + ': ' + emailError);
         sheet.getRange(i + 1, logColumnIndex + 1).setValue('Error: ' + emailError.message);
         errorCount++;
       }
@@ -467,6 +508,22 @@ function convertExcelToPdf(file) {
       return null;
     }
   }
+}
+
+// Function to parse email addresses from a string (comma or semicolon separated)
+function parseEmailAddresses(emailString) {
+  if (!emailString || typeof emailString !== 'string') {
+    return [];
+  }
+  
+  // Split by comma or semicolon
+  var emails = emailString.split(/[,;]/).map(function(email) {
+    return email.trim();
+  }).filter(function(email) {
+    return email && isValidEmail(email);
+  });
+  
+  return emails;
 }
 
 // Function to validate email address

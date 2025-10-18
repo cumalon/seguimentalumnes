@@ -316,18 +316,12 @@
     <button onclick="loadSheetHeaders()">Carregar capçaleres</button>
   </div>
 
-  <!-- Section 2: Email Column -->
-  <div class="section" id="emailColumnSection" style="display:none;">
-    <h3>2. Columna d'email</h3>
-    <label for="emailColumnSelect">Columna amb emails:</label>
-    <select id="emailColumnSelect">
-      <option value="">--Selecciona columna--</option>
-    </select>
-  </div>
-
-  <!-- Section 3: Email Body -->
+  <!-- Section 2: Email Body -->
   <div class="section" id="emailBodySection" style="display:none;">
-    <h3>3. Cos del correu</h3>
+    <h3>2. Cos del correu</h3>
+    <p class="info-text">Els destinataris s'obtenen de la columna <strong>EMAIL</strong> (obligatòria). 
+    Opcionalment pots afegir <strong>EMAIL_CC</strong> i/o <strong>EMAIL_BCC</strong>. 
+    Pots indicar múltiples emails separats per comes (,) o punt i coma (;).</p>
     <label for="emailSubject">Assumpte:</label>
     <input type="text" id="emailSubject" placeholder="Assumpte del correu">
     
@@ -338,9 +332,9 @@
     <button onclick="loadTagMapping()">Següent: Mapeja tags</button>
   </div>
 
-  <!-- Section 4: Tag Mapping -->
+  <!-- Section 3: Tag Mapping -->
   <div class="section" id="tagMappingSection" style="display:none;">
-    <h3>4. Mapeja tags amb capçaleres</h3>
+    <h3>3. Mapeja tags amb capçaleres</h3>
     <div id="tagMappingContainer">
       <table id="tagMappingTable">
         <thead>
@@ -355,9 +349,9 @@
     </div>
   </div>
 
-  <!-- Section 5: Attachments -->
+  <!-- Section 4: Attachments -->
   <div class="section" id="attachmentsSection" style="display:none;">
-    <h3>5. Adjunts (opcional)</h3>
+    <h3>4. Adjunts (opcional)</h3>
     <div class="collapsible-header" onclick="toggleAttachments()">
       Selecció d'adjunts
     </div>
@@ -368,9 +362,9 @@
     </div>
   </div>
 
-  <!-- Section 6: Scheduling -->
+  <!-- Section 5: Scheduling -->
   <div class="section" id="schedulingSection" style="display:none;">
-    <h3>6. Programació d'enviament</h3>
+    <h3>5. Programació d'enviament</h3>
     <p class="info-text">Per defecte, els correus s'enviaran immediatament</p>
     
     <div class="schedule-options">
@@ -392,9 +386,9 @@
     </div>
   </div>
 
-  <!-- Section 7: Send -->
+  <!-- Section 6: Send -->
   <div class="section" id="sendSection" style="display:none;">
-    <h3>7. Enviar correus</h3>
+    <h3>6. Enviar correus</h3>
     <p class="info-text">Revisa la configuració abans d'enviar</p>
     <div class="button-container">
       <button onclick="sendMassEmails()" style="background-color: #f44336;">
@@ -431,9 +425,15 @@
       google.script.run
         .withSuccessHandler(function(headers) {
           availableHeaders = headers;
-          populateEmailColumnSelect(headers);
+          
+          // Check if EMAIL column exists
+          if (headers.indexOf('EMAIL') === -1) {
+            showWarning('Error: La pestanya ha de tenir una columna amb nom "EMAIL"');
+            showLoading(false);
+            return;
+          }
+          
           populateAttachmentColumnsList(headers);
-          document.getElementById('emailColumnSection').style.display = 'block';
           document.getElementById('emailBodySection').style.display = 'block';
           document.getElementById('attachmentsSection').style.display = 'block';
           document.getElementById('schedulingSection').style.display = 'block';
@@ -446,21 +446,7 @@
         .carregarCapcaleres(sheetName, parseInt(headerRowIndex));
     }
 
-    function populateEmailColumnSelect(headers) {
-      var select = document.getElementById('emailColumnSelect');
-      select.innerHTML = '<option value="">--Selecciona columna--</option>';
-      
-      headers.forEach(function(header) {
-        var option = document.createElement('option');
-        option.value = header;
-        option.text = header;
-        // Auto-select if column name contains "email" or "Email"
-        if (header.toLowerCase().includes('email')) {
-          option.selected = true;
-        }
-        select.appendChild(option);
-      });
-    }
+
 
     function populateAttachmentColumnsList(headers) {
       var container = document.getElementById('attachmentColumnsList');
@@ -588,11 +574,10 @@
       // Validate all inputs
       var sheetName = document.getElementById('sheetSelect').value;
       var headerRowIndex = parseInt(document.getElementById('headerRowIndex').value);
-      var emailColumn = document.getElementById('emailColumnSelect').value;
       var emailSubject = document.getElementById('emailSubject').value;
       var emailBody = document.getElementById('emailBody').value;
 
-      if (!sheetName || !emailColumn || !emailSubject.trim() || !emailBody.trim()) {
+      if (!sheetName || !emailSubject.trim() || !emailBody.trim()) {
         showWarning('Omple tots els camps obligatoris');
         return;
       }
@@ -637,7 +622,6 @@
       var config = {
         sheetName: sheetName,
         headerRowIndex: headerRowIndex,
-        emailColumn: emailColumn,
         subject: emailSubject,
         body: emailBody,
         tagMapping: tagMapping,
