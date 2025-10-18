@@ -184,12 +184,20 @@
     }
 
     .picker-button {
-      background-color: #2196F3;
-      margin-bottom: 15px;
+      background: transparent;
+      border: none;
+      color: #2196F3;
+      font-size: smaller;
+      margin-top: 5px;
     }
 
     .picker-button:hover {
-      background-color: #0b7dda;
+      background: transparent;
+      text-decoration: underline;
+    }
+
+    .icon-blank {
+      margin-right: 7px;
     }
 
     .next-button {
@@ -281,14 +289,14 @@
     <a id="TEMPLATE_ID" class="template-link" style="display:none;" href="" target="_blank" onclick="event.preventDefault(); openTemplate('TEMPLATE_ID');"></a>
     <p class="info-text" id="templatePlaceholder">Cap plantilla seleccionada</p>
     <button type="button" class="picker-button" onclick="showPicker('document')">
-      <i class="fas fa-file"></i> Selecciona plantilla
+      <i class="fas fa-file icon-blank"></i>Selecciona
     </button>
     
     <label>Repositori:</label>
     <a id="REPOSITORY_ID" class="template-link" style="display:none;" href="" target="_blank" onclick="event.preventDefault(); openTemplate('REPOSITORY_ID');"></a>
     <p class="info-text" id="repositoryPlaceholder">Cap repositori seleccionat</p>
     <button type="button" class="picker-button" onclick="showPicker('folder')">
-      <i class="fas fa-folder"></i> Selecciona repositori
+      <i class="fas fa-folder icon-blank"></i>Selecciona
     </button>
     
     <button id="templateNextButton" class="next-button" style="display:none;" onclick="loadTagMapping()">Següent: Mapeja tags</button>
