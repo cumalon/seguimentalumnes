@@ -171,15 +171,49 @@
     }
 
     .template-link {
-      display: inline-block;
-      margin: 10px 0;
+      display: block;
+      margin: 5px 0 10px 0;
       color: #4CAF50;
       text-decoration: none;
       font-weight: bold;
+      word-break: break-all;
     }
 
     .template-link:hover {
       text-decoration: underline;
+    }
+
+    .picker-button {
+      background-color: #2196F3;
+      margin-bottom: 15px;
+    }
+
+    .picker-button:hover {
+      background-color: #0b7dda;
+    }
+
+    .next-button {
+      background-color: #4CAF50;
+      font-weight: bold;
+      padding: 12px 20px;
+      font-size: 15px;
+    }
+
+    .next-button:hover {
+      background-color: #45a049;
+    }
+
+    #tagMappingContainer {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: white;
+      padding: 5px;
+    }
+
+    #tagMappingTable {
+      margin-top: 0;
     }
 </style>
 
@@ -246,21 +280,18 @@
     <label>Plantilla:</label>
     <a id="TEMPLATE_ID" class="template-link" style="display:none;" href="" target="_blank" onclick="event.preventDefault(); openTemplate('TEMPLATE_ID');"></a>
     <p class="info-text" id="templatePlaceholder">Cap plantilla seleccionada</p>
-    <button type="button" onclick="showPicker('document')">
+    <button type="button" class="picker-button" onclick="showPicker('document')">
       <i class="fas fa-file"></i> Selecciona plantilla
     </button>
-    
-    <br><br>
     
     <label>Repositori:</label>
     <a id="REPOSITORY_ID" class="template-link" style="display:none;" href="" target="_blank" onclick="event.preventDefault(); openTemplate('REPOSITORY_ID');"></a>
     <p class="info-text" id="repositoryPlaceholder">Cap repositori seleccionat</p>
-    <button type="button" onclick="showPicker('folder')">
+    <button type="button" class="picker-button" onclick="showPicker('folder')">
       <i class="fas fa-folder"></i> Selecciona repositori
     </button>
     
-    <br><br>
-    <button id="templateNextButton" style="display:none;" onclick="loadTagMapping()">Següent: Mapeja tags</button>
+    <button id="templateNextButton" class="next-button" style="display:none;" onclick="loadTagMapping()">Següent: Mapeja tags</button>
   </div>
 
   <!-- Section 5: Tag Mapping -->
