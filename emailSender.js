@@ -58,7 +58,7 @@ function checkEmailQuotas(config) {
 function scheduleMassEmails(config) {
   try {
     // Validate configuration
-    if (!config.sheetName || !config.emailColumn || !config.subject || !config.body) {
+    if (!config.sheetName || !config.subject || !config.body) {
       throw new Error('Configuració incompleta');
     }
 
