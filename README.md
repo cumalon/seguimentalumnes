@@ -2,15 +2,11 @@
 
 Aquest projecte consisteix en una extensió de fulls de càlcul de Google.
 
-L'extensió té tres funcionalitats principals:
+L'extensió té dues funcionalitats principals:
 - Generar informes a partir de les dades d'un full de càlcul. 
-- Visualització dels informes en una webapp.
 - Enviament massiu de correus personalitzats amb adjunts.
 
 Els informes són documents de text de Google.
-
-La webapp genera una pàgina html on s'enllaça els informes generats. Hi ha dues visualitzacions, la vista admin o d'accés complet i la vista user o d'accés limitat.
-
 
 ## Com es fa?
 
@@ -28,13 +24,13 @@ El resultat és una sèrie de documents generats automàticament on cada un cont
 
 ### Fulls i camps importants
 
-Les dades d'un merge han d'estar totes elles en una sola pestanya del full de càlcul. El full pot tenir qualsevol nom. Els noms de les capçaleres són lliures per realitzar un procés de merge, però no és així quan s'executa la webapp. La webapp buscarà els camps **EMAIL** i **Cognoms, Nom**.
+Les dades d'un merge han d'estar totes elles en una sola pestanya del full de càlcul. El full pot tenir qualsevol nom. Els noms de les capçaleres són lliures per realitzar un procés de merge.
 
-**EMAIL:** quan posem aquest camp en una de les columnes d'un merge, el document generat de cada fila es comparteix en mode lectura amb el correu proporcionat. La webapp s'ha d'executar des d'un usuari Google, de manera que, per defecte, només es visualitza els informes generats i compartits amb l'usuari en concret. Això permet que, en una graella de qualificacions d'un grup d'alumnes per exemple, un estudiant visualitzi únicament les seves qualificacions.
+**EMAIL:** quan posem aquest camp en una de les columnes d'un merge, el document generat de cada fila es comparteix en mode lectura amb el correu proporcionat. L'usuari ha d'executar l'script des d'un compte Google, de manera que, per defecte, només es visualitzen i comparteixen els informes generats amb els correus indicats.
 
-**Cognoms, Nom**: quan un usuari admin executa la webapp aquest pot accedir als informes generats per a múltiples files del full de dades. En aquest cas, apareix un selector on es pot escollit el Cognom, Nom del qual es vol visualitzar els informes. Aquesta seria la vista que podria veure el professorat de l'exemple acadèmic mencionat abans.
+**Cognoms, Nom**: quan un usuari admin executa l'script, pot accedir als informes generats per a múltiples files del full de dades. En aquest cas, el sistema permet seleccionar el Cognom, Nom del qual es vol visualitzar els informes. Aquesta seria la vista que podria veure el professorat d'un exemple acadèmic.
 
-Els informes accessibles des de la webapp es llisten a una taula de dades del full amb noma **webapp** (cal veure exemples). Aquest mateix full també conté la taula d'usuaris Google amb accés admin i la taula amb els Cognoms, Nom que es podran seleccionar des de la visualització admin.
+Els informes accessibles es llisten en una taula de dades del full. Aquest mateix full també pot contenir la taula d'usuaris Google amb accés admin i la taula amb els Cognoms, Nom que es podran seleccionar des de la visualització admin.
 
 
 ## Enviament massiu de correus
@@ -112,3 +108,4 @@ Per canviar la ID del projecte a clasp cal executar la següent comanda:
 Com que la gestió del projecte es fa localment i no a través de l'editor de scripts de Google, es pot fer servir git per gestionar les versions del codi. En concret el codi està versionat a través de github:
 
  https://github.com/cumalon/qualificacions
+
