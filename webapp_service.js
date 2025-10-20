@@ -57,8 +57,8 @@ Logger.log("forEach ...");
         var mergeSheet = spreadsheet.getSheetByName(sheetName);
         var mergeData = mergeSheet.getDataRange().getValues();
         
-        // Cerca l'email de l'usuari a la columna "Email"
-        var emailIndex = mergeData[headerRowIndex].indexOf("Email");
+        // Cerca l'email de l'usuari a la columna "EMAIL"
+        var emailIndex = mergeData[headerRowIndex].indexOf("EMAIL");
         var reportIndex = mergeData[headerRowIndex].indexOf("MERGE_DOC_URL");
         Logger.log("mergeSheet: "+mergeSheet.getName()+" emailIndex: "+emailIndex + " reportIndex: "+reportIndex)
         for (var i = headerRowIndex; i < mergeData.length; i++) {

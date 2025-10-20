@@ -244,6 +244,7 @@
   <!-- Section 1: Sheet Selection -->
   <div class="section">
     <h3>1. Selecciona la pestanya</h3>
+    <p class="info-text">La pestanya ha de tenir una columna <strong>EMAIL</strong> (obligatòria) per compartir els informes generats.</p>
     <label for="sheetSelect">Pestanya:</label>
     <select id="sheetSelect">
       <option value="">--Selecciona una pestanya--</option>
@@ -359,6 +360,14 @@
       google.script.run
         .withSuccessHandler(function(headers) {
           availableHeaders = headers;
+          
+          // Check if EMAIL column exists (required for sharing reports)
+          if (headers.indexOf('EMAIL') === -1) {
+            showWarning('Error: La pestanya ha de tenir una columna amb nom "EMAIL" per poder compartir els informes');
+            showLoading(false);
+            return;
+          }
+          
           buildKeyHeaderSelect(headers);
           document.getElementById('keyHeaderSection').style.display = 'block';
           showLoading(false);
