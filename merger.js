@@ -127,10 +127,10 @@ function checkRowFileUrl(rowData) {
       replaceDocumentContent(url, plantillaDocId);
     }
 
-    var emailIndex = rowData.colIndex["Email"];
-    if(emailIndex>0) { // Email is available
+    var emailIndex = rowData.colIndex["EMAIL"];
+    if(emailIndex !== undefined && emailIndex >= 0) { // EMAIL is available
       var email = rowData.dades[emailIndex];
-      addViewerSilently(file.getId(),email); // cal fer sempre per si canvia el Email
+      addViewerSilently(file.getId(),email); // cal fer sempre per si canvia el EMAIL
     }
 
   }
