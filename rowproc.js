@@ -32,7 +32,7 @@ function carregarCapcaleres(pestanya,headerRowIndex) {
     PropertiesService.getScriptProperties().setProperty("HEADER_ROW_INDEX",headerRowIndex);
     var capcalera = headers.filter(function(camp) {
       Logger.log(camp + "és un: "+typeof camp);    
-      return (typeof camp) === "string" && camp !== "" && camp !== "MERGE_DOC_URL";
+      return (typeof camp) === "string" && camp !== "";
     });
     Logger.log("capcaleres valides: "+capcalera);
     return capcalera; // Retornar les capçaleres vàlides
