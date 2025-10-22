@@ -509,8 +509,8 @@
       var emailSubject = document.getElementById('emailSubject').value;
       var emailBody = document.getElementById('emailBody').value;
       
-      if (!emailBody.trim()) {
-        showWarning('Escriu el cos del correu primer');
+      if (!emailSubject.trim() || !emailBody.trim()) {
+        showWarning("Cal completar l'assumpte i el cos del correu primer");
         return;
       }
 
@@ -540,46 +540,48 @@
 
       if (emailTags.length === 0) {
         showWarning('No s\'han trobat tags ni a l\'assumpte ni al cos del correu. Utilitza el format <<NomTag>>');
-        return;
+      }
+      else {
+
+        // Build tag mapping table
+        var tbody = document.getElementById('tagMappingTableBody');
+        tbody.innerHTML = '';
+
+        emailTags.forEach(function(tag, index) {
+          var row = document.createElement('tr');
+          
+          var tagCell = document.createElement('td');
+          tagCell.textContent = tag;
+          
+          var selectCell = document.createElement('td');
+          var select = document.createElement('select');
+          select.id = 'tagMap_' + index;
+          
+          var defaultOption = document.createElement('option');
+          defaultOption.value = '';
+          defaultOption.text = '--';
+          select.appendChild(defaultOption);
+          
+          availableHeaders.forEach(function(header) {
+            var option = document.createElement('option');
+            option.value = header;
+            option.text = header;
+            // Auto-map if tag matches header
+            if (tag === header) {
+              option.selected = true;
+            }
+            select.appendChild(option);
+          });
+          
+          selectCell.appendChild(select);
+          row.appendChild(tagCell);
+          row.appendChild(selectCell);
+          tbody.appendChild(row);
+        });
+
+        document.getElementById('tagMappingSection').style.display = 'block';
       }
 
-      // Build tag mapping table
-      var tbody = document.getElementById('tagMappingTableBody');
-      tbody.innerHTML = '';
-
-      emailTags.forEach(function(tag, index) {
-        var row = document.createElement('tr');
-        
-        var tagCell = document.createElement('td');
-        tagCell.textContent = tag;
-        
-        var selectCell = document.createElement('td');
-        var select = document.createElement('select');
-        select.id = 'tagMap_' + index;
-        
-        var defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.text = '--';
-        select.appendChild(defaultOption);
-        
-        availableHeaders.forEach(function(header) {
-          var option = document.createElement('option');
-          option.value = header;
-          option.text = header;
-          // Auto-map if tag matches header
-          if (tag === header) {
-            option.selected = true;
-          }
-          select.appendChild(option);
-        });
-        
-        selectCell.appendChild(select);
-        row.appendChild(tagCell);
-        row.appendChild(selectCell);
-        tbody.appendChild(row);
-      });
-
-      document.getElementById('tagMappingSection').style.display = 'block';
       document.getElementById('sendSection').style.display = 'block';
     }
 
