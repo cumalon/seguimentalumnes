@@ -175,6 +175,8 @@ function sendMassEmailsNow(config) {
     var emailColumnIndex = headers.indexOf('EMAIL');
     var emailCcColumnIndex = headers.indexOf('EMAIL_CC');
     var emailBccColumnIndex = headers.indexOf('EMAIL_BCC');
+    var replyToColumnIndex = headers.indexOf('REPLY_TO');
+    var senderNameColumnIndex = headers.indexOf('SENDER_NAME');
     
     if (emailColumnIndex === -1) {
       throw new Error('Columna EMAIL no trobada. Cal una columna amb el nom exacte "EMAIL"');
@@ -265,6 +267,22 @@ function sendMassEmailsNow(config) {
           name: 'Enviament massiu',
           attachments: attachments
         };
+        
+        // Set sender name from SENDER_NAME column if present and not empty
+        if (senderNameColumnIndex !== -1 && row[senderNameColumnIndex]) {
+          var senderName = String(row[senderNameColumnIndex]).trim();
+          if (senderName) {
+            emailOptions.name = senderName;
+          }
+        }
+        
+        // Set reply-to from REPLY_TO column if present and not empty
+        if (replyToColumnIndex !== -1 && row[replyToColumnIndex]) {
+          var replyTo = String(row[replyToColumnIndex]).trim();
+          if (replyTo && isValidEmail(replyTo)) {
+            emailOptions.replyTo = replyTo;
+          }
+        }
         
         if (ccEmails.length > 0) {
           emailOptions.cc = ccEmails.join(',');
