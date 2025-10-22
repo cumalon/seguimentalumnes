@@ -43,6 +43,8 @@ L'extensió permet enviar correus electrònics personalitzats de forma massiva a
   - **EMAIL** (obligatòria): Columna amb els destinataris principals
   - **EMAIL_CC** (opcional): Columna amb còpies visibles
   - **EMAIL_BCC** (opcional): Columna amb còpies ocultes
+  - **REPLY_TO** (opcional): Columna amb l'adreça de resposta. Si està buida o no existeix, les respostes aniran al remitent per defecte
+  - **SENDER_NAME** (opcional): Columna amb el nom del remitent que apareixerà als correus. Si està buida o no existeix, s'utilitza "Enviament massiu" per defecte
   - Cada cel·la pot contenir múltiples adreces separades per comes (,) o punt i coma (;)
 
 - **Personalització amb tags**: El cos del correu pot contenir tags en format `<<NomTag>>` que s'associen automàticament o manualment amb les capçaleres de la pestanya.
@@ -73,7 +75,9 @@ L'extensió permet enviar correus electrònics personalitzats de forma massiva a
 
 1. Crea una columna anomenada **EMAIL** amb les adreces dels destinataris (obligatòria)
 2. Opcionalment, crea columnes **EMAIL_CC** i/o **EMAIL_BCC** per còpies
-3. Cada cel·la pot contenir múltiples emails separats per comes o punt i coma:
+3. Opcionalment, crea una columna **REPLY_TO** per especificar l'adreça de resposta
+4. Opcionalment, crea una columna **SENDER_NAME** per personalitzar el nom del remitent
+5. Cada cel·la pot contenir múltiples emails separats per comes o punt i coma:
    - Exemple: `joan@example.com, maria@example.com`
    - Exemple: `pere@example.com; anna@example.com`
 
