@@ -184,8 +184,12 @@ function sendMassEmailsNow(config) {
     var logColumnIndex = headers.indexOf('EMAIL_LOG');
     if (logColumnIndex === -1) {
       sheet.insertColumnAfter(sheet.getLastColumn());
-      logColumnIndex = sheet.getLastColumn() - 1;
+      logColumnIndex = sheet.getLastColumn() + 1; // one blank column before log
       sheet.getRange(config.headerRowIndex, logColumnIndex + 1).setValue('EMAIL_LOG');
+      var column = sheet.getRange(config.headerRowIndex, logColumnIndex + 1, sheet.getMaxRows());
+      column.clearFormat();
+      column.setFontStyle('italic');
+      column.setFontColor('#4c4b4d');
     }
 
     // Build header to index map
