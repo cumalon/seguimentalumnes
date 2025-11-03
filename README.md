@@ -39,6 +39,11 @@ L'extensió permet enviar correus electrònics personalitzats de forma massiva a
 
 ### Característiques principals:
 
+- **Selecció de files a processar**: Pots seleccionar quines files de la pestanya vols processar:
+  - Tria una columna clau (keyHeader) que identifiqui cada fila (per exemple, nom de l'alumne)
+  - Marca les files específiques que vols processar mitjançant checkboxes
+  - Només s'enviaran correus a les files seleccionades
+
 - **Destinataris amb columnes reservades**: 
   - **EMAIL** (obligatòria): Columna amb els destinataris principals
   - **EMAIL_CC** (opcional): Columna amb còpies visibles
@@ -85,13 +90,15 @@ L'extensió permet enviar correus electrònics personalitzats de forma massiva a
 
 1. Obre el menú "Alumnes" i selecciona "Enviament massiu"
 2. Selecciona la pestanya de dades i indica la fila de capçalera
-3. Redacta l'assumpte i el cos del correu utilitzant tags (ex: `<<Nom>>`, `<<Nota>>`)
-4. Mapeja els tags amb les capçaleres corresponents de la pestanya
-5. Opcionalment, selecciona columnes amb URLs d'adjunts
-6. Configura quan s'enviarà el correu (immediat, demora o data/hora específica)
-7. Revisa la informació de quotes i envia
+3. Tria la columna clau que identifica cada fila (per exemple, nom de l'alumne)
+4. Selecciona les files que vols processar mitjançant les checkboxes (pots marcar/desmarcar totes amb la checkbox de la capçalera)
+5. Redacta l'assumpte i el cos del correu utilitzant tags (ex: `<<Nom>>`, `<<Nota>>`)
+6. Mapeja els tags amb les capçaleres corresponents de la pestanya
+7. Opcionalment, selecciona columnes amb URLs d'adjunts
+8. Configura quan s'enviarà el correu (immediat, demora o data/hora específica)
+9. Revisa la informació de quotes i envia
 
-Els correus s'enviaran segons la configuració establerta i es registrarà l'estat de cada enviament a la columna `EMAIL_LOG`.
+Els correus s'enviaran segons la configuració establerta i només a les files seleccionades. L'estat de cada enviament es registrarà a la columna `EMAIL_LOG`.
 
 # Us de clasp
 
