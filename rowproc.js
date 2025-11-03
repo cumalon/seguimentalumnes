@@ -75,6 +75,34 @@ function carregarDadesPestanya(keyHeader) {
   return keyValues; // Retorna els keyValues per a la taula de selecció
 }
 
+// Funció per carregar les dades de la pestanya especificada per a enviament massiu
+function carregarDadesPestanyaEmail(sheetName, keyHeader, headerRowIndex) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var full = ss.getSheetByName(sheetName);
+  
+  if (!full) {
+    throw new Error('No s\'ha trobat la pestanya "' + sheetName + '".');
+  }
+  
+  var dades = full.getDataRange().getValues();
+  var headers = dades[headerRowIndex - 1];
+  var headerColIndex = headers.indexOf(keyHeader);
+
+  if (headerColIndex === -1) {
+    throw new Error('No s\'ha trobat la columna "' + keyHeader + '".');
+  }
+
+  // Extreu les dades de la columna keyHeader
+  var keyValues = [];
+  for (var i = headerRowIndex; i < dades.length; i++) {
+    var fila = {};
+    fila[keyHeader] = dades[i][headerColIndex];
+    keyValues.push(fila);
+  }
+
+  return keyValues;
+}
+
 function obtenirDadesBy(sheet,keyValue,searchHeader) {
   const dades = sheet.getDataRange().getValues();
   const headerRowIndex = parseInt(PropertiesService.getScriptProperties().getProperty("HEADER_ROW_INDEX"));

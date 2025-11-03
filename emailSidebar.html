@@ -316,9 +316,35 @@
     <button onclick="loadSheetHeaders()">Carregar capçaleres</button>
   </div>
 
-  <!-- Section 2: Email Body -->
+  <!-- Section 2: Key Header Selection -->
+  <div class="section" id="keyHeaderSection" style="display:none;">
+    <h3>2. Selecciona la columna clau</h3>
+    <p class="info-text">Tria la columna que identifica cada fila (per exemple, nom de l'alumne)</p>
+    <label for="keyHeaderSelect">Columna clau:</label>
+    <select id="keyHeaderSelect">
+      <option value="">--Selecciona una capçalera--</option>
+    </select>
+    
+    <button onclick="loadRowsForSelection()">Següent: Selecciona files</button>
+  </div>
+
+  <!-- Section 3: Row Selection -->
+  <div class="section" id="selectRowsSection" style="display:none;">
+    <h3>3. Selecciona files</h3>
+    <p class="info-text">Marca les files per les quals vols enviar correus</p>
+    <div class="checkbox-list" id="selectRowsList">
+      <table id="selectRowsTable">
+        <thead id="selectRowsTableHead">
+        </thead>
+        <tbody id="selectRowsTableBody"></tbody>
+      </table>
+    </div>
+    <button onclick="proceedToEmailBody()">Següent: Cos del correu</button>
+  </div>
+
+  <!-- Section 4: Email Body -->
   <div class="section" id="emailBodySection" style="display:none;">
-    <h3>2. Cos del correu</h3>
+    <h3>4. Cos del correu</h3>
     <p class="info-text">Els destinataris s'obtenen de la columna <strong>EMAIL</strong> (obligatòria). 
     Opcionalment pots afegir <strong>EMAIL_CC</strong>, <strong>EMAIL_BCC</strong>, <strong>REPLY_TO</strong> i/o <strong>SENDER_NAME</strong>. 
     Pots indicar múltiples emails separats per comes (,) o punt i coma (;).</p>
@@ -332,9 +358,9 @@
     <button onclick="loadTagMapping()">Següent: Mapeja tags</button>
   </div>
 
-  <!-- Section 3: Tag Mapping -->
+  <!-- Section 5: Tag Mapping -->
   <div class="section" id="tagMappingSection" style="display:none;">
-    <h3>3. Mapeja tags amb capçaleres</h3>
+    <h3>5. Mapeja tags amb capçaleres</h3>
     <div id="tagMappingContainer">
       <table id="tagMappingTable">
         <thead>
@@ -349,9 +375,9 @@
     </div>
   </div>
 
-  <!-- Section 4: Attachments -->
+  <!-- Section 6: Attachments -->
   <div class="section" id="attachmentsSection" style="display:none;">
-    <h3>4. Adjunts (opcional)</h3>
+    <h3>6. Adjunts (opcional)</h3>
     <div class="collapsible-header" onclick="toggleAttachments()">
       Selecció d'adjunts
     </div>
@@ -362,9 +388,9 @@
     </div>
   </div>
 
-  <!-- Section 5: Scheduling -->
+  <!-- Section 7: Scheduling -->
   <div class="section" id="schedulingSection" style="display:none;">
-    <h3>5. Programació d'enviament</h3>
+    <h3>7. Programació d'enviament</h3>
     <p class="info-text">Per defecte, els correus s'enviaran immediatament</p>
     
     <div class="schedule-options">
@@ -386,9 +412,9 @@
     </div>
   </div>
 
-  <!-- Section 6: Send -->
+  <!-- Section 8: Send -->
   <div class="section" id="sendSection" style="display:none;">
-    <h3>6. Enviar correus</h3>
+    <h3>8. Enviar correus</h3>
     <p class="info-text">Revisa la configuració abans d'enviar</p>
     <div class="button-container">
       <button onclick="sendMassEmails()" style="background-color: #f44336;">
@@ -400,6 +426,7 @@
   <script>
     var availableHeaders = [];
     var emailTags = [];
+    var selectedRowIndices = []; // Store selected row indices
 
     function initEmailSidebar(data) {
       var select = document.getElementById('sheetSelect');
@@ -433,8 +460,9 @@
             return;
           }
           
+          buildKeyHeaderSelect(headers);
           populateAttachmentColumnsList(headers);
-          document.getElementById('emailBodySection').style.display = 'block';
+          document.getElementById('keyHeaderSection').style.display = 'block';
           document.getElementById('attachmentsSection').style.display = 'block';
           document.getElementById('schedulingSection').style.display = 'block';
           showLoading(false);
@@ -444,6 +472,83 @@
           showLoading(false);
         })
         .carregarCapcaleres(sheetName, parseInt(headerRowIndex));
+    }
+
+    function buildKeyHeaderSelect(headers) {
+      var select = document.getElementById('keyHeaderSelect');
+      select.innerHTML = '<option value="">--Selecciona una capçalera--</option>';
+      headers.forEach(function(header) {
+        var option = document.createElement('option');
+        option.value = header;
+        option.text = header;
+        select.appendChild(option);
+      });
+    }
+
+    function loadRowsForSelection() {
+      var keyHeader = document.getElementById('keyHeaderSelect').value;
+      
+      if (!keyHeader) {
+        showWarning('Selecciona una columna clau primer');
+        return;
+      }
+
+      showLoading(true);
+      google.script.run
+        .withSuccessHandler(function(keyValues) {
+          displayRowSelection(keyValues, keyHeader);
+          document.getElementById('selectRowsSection').style.display = 'block';
+          showLoading(false);
+        })
+        .withFailureHandler(function(error) {
+          showWarning('Error carregant files: ' + error.message);
+          showLoading(false);
+        })
+        .carregarDadesPestanyaEmail(document.getElementById('sheetSelect').value, keyHeader, parseInt(document.getElementById('headerRowIndex').value));
+    }
+
+    function displayRowSelection(keyValues, keyHeader) {
+      var thead = document.getElementById('selectRowsTableHead');
+      var tbody = document.getElementById('selectRowsTableBody');
+      
+      thead.innerHTML = '';
+      tbody.innerHTML = '';
+
+      // Add header row with select all checkbox
+      var headerRow = document.createElement('tr');
+      var selectAllCheckbox = '<input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)">';
+      headerRow.innerHTML = '<th>' + keyHeader + '</th><th>' + selectAllCheckbox + '</th>';
+      thead.appendChild(headerRow);
+
+      // Add data rows
+      keyValues.forEach(function(fila, index) {
+        var row = document.createElement('tr');
+        var checkbox = '<input type="checkbox" class="rowCheckbox" id="select' + index + '">';
+        row.innerHTML = '<td>' + fila[keyHeader] + '</td><td>' + checkbox + '</td>';
+        tbody.appendChild(row);
+      });
+    }
+
+    function toggleSelectAll(selectAllCheckbox) {
+      var checkboxes = document.querySelectorAll('.rowCheckbox');
+      checkboxes.forEach(function(checkbox) {
+        checkbox.checked = selectAllCheckbox.checked;
+      });
+    }
+
+    function proceedToEmailBody() {
+      // Count selected rows
+      var selectedCount = 0;
+      var checkboxes = document.querySelectorAll('.rowCheckbox:checked');
+      selectedCount = checkboxes.length;
+      
+      if (selectedCount === 0) {
+        showWarning('Selecciona almenys una fila');
+        return;
+      }
+
+      // Show email body section
+      document.getElementById('emailBodySection').style.display = 'block';
     }
 
 
@@ -591,9 +696,26 @@
       var headerRowIndex = parseInt(document.getElementById('headerRowIndex').value);
       var emailSubject = document.getElementById('emailSubject').value;
       var emailBody = document.getElementById('emailBody').value;
+      var keyHeader = document.getElementById('keyHeaderSelect').value;
 
-      if (!sheetName || !emailSubject.trim() || !emailBody.trim()) {
+      if (!sheetName || !emailSubject.trim() || !emailBody.trim() || !keyHeader) {
         showWarning('Omple tots els camps obligatoris');
+        return;
+      }
+
+      // Get selected rows
+      var selectedRows = [];
+      var rows = document.querySelectorAll('#selectRowsTableBody tr');
+      rows.forEach(function(row, index) {
+        var checkbox = document.getElementById('select' + index);
+        if (checkbox && checkbox.checked) {
+          var keyValue = row.cells[0].textContent;
+          selectedRows.push(keyValue);
+        }
+      });
+
+      if (selectedRows.length === 0) {
+        showWarning('Selecciona almenys una fila per enviar');
         return;
       }
 
@@ -641,7 +763,9 @@
         body: emailBody,
         tagMapping: tagMapping,
         attachmentColumns: attachmentColumns,
-        scheduleInfo: scheduleInfo
+        scheduleInfo: scheduleInfo,
+        keyHeader: keyHeader,
+        selectedRows: selectedRows
       };
 
       if (confirm('Estàs segur que vols enviar els correus?')) {

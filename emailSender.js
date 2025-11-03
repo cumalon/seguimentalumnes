@@ -21,9 +21,26 @@ function checkEmailQuotas(config) {
     
     // Count emails to send
     var emailCount = 0;
-    for (var i = config.headerRowIndex; i < data.length; i++) {
-      if (data[i][emailColumnIndex]) {
-        emailCount++;
+    
+    // If selectedRows is specified, count only those rows
+    if (config.selectedRows && config.selectedRows.length > 0) {
+      var keyHeaderIndex = headers.indexOf(config.keyHeader);
+      if (keyHeaderIndex === -1) {
+        throw new Error('No s\'ha trobat la columna clau: ' + config.keyHeader);
+      }
+      
+      for (var i = config.headerRowIndex; i < data.length; i++) {
+        var keyValue = data[i][keyHeaderIndex];
+        if (config.selectedRows.indexOf(keyValue) !== -1 && data[i][emailColumnIndex]) {
+          emailCount++;
+        }
+      }
+    } else {
+      // Count all rows with email
+      for (var i = config.headerRowIndex; i < data.length; i++) {
+        if (data[i][emailColumnIndex]) {
+          emailCount++;
+        }
       }
     }
     
@@ -177,9 +194,18 @@ function sendMassEmailsNow(config) {
     var emailBccColumnIndex = headers.indexOf('EMAIL_BCC');
     var replyToColumnIndex = headers.indexOf('REPLY_TO');
     var senderNameColumnIndex = headers.indexOf('SENDER_NAME');
+    var keyHeaderIndex = -1;
     
     if (emailColumnIndex === -1) {
       throw new Error('Columna EMAIL no trobada. Cal una columna amb el nom exacte "EMAIL"');
+    }
+
+    // Find key header index if selectedRows is specified
+    if (config.selectedRows && config.selectedRows.length > 0) {
+      keyHeaderIndex = headers.indexOf(config.keyHeader);
+      if (keyHeaderIndex === -1) {
+        throw new Error('Columna clau no trobada: ' + config.keyHeader);
+      }
     }
 
     // Find or create log column
@@ -217,6 +243,15 @@ function sendMassEmailsNow(config) {
 
     for (var i = config.headerRowIndex; i < data.length; i++) {
       var row = data[i];
+      
+      // Skip row if selectedRows is specified and this row is not selected
+      if (config.selectedRows && config.selectedRows.length > 0) {
+        var keyValue = row[keyHeaderIndex];
+        if (config.selectedRows.indexOf(keyValue) === -1) {
+          continue; // Skip this row
+        }
+      }
+      
       var emailValue = row[emailColumnIndex];
       
       if (!emailValue || !String(emailValue).trim()) {
