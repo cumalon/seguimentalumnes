@@ -515,15 +515,31 @@
 
       // Add header row with select all checkbox
       var headerRow = document.createElement('tr');
-      var selectAllCheckbox = '<input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)">';
-      headerRow.innerHTML = '<th>' + keyHeader + '</th><th>' + selectAllCheckbox + '</th>';
+      var thKeyHeader = document.createElement('th');
+      thKeyHeader.textContent = keyHeader;
+      var thCheckbox = document.createElement('th');
+      var selectAllCheckbox = document.createElement('input');
+      selectAllCheckbox.type = 'checkbox';
+      selectAllCheckbox.id = 'selectAll';
+      selectAllCheckbox.onclick = function() { toggleSelectAll(this); };
+      thCheckbox.appendChild(selectAllCheckbox);
+      headerRow.appendChild(thKeyHeader);
+      headerRow.appendChild(thCheckbox);
       thead.appendChild(headerRow);
 
       // Add data rows
       keyValues.forEach(function(fila, index) {
         var row = document.createElement('tr');
-        var checkbox = '<input type="checkbox" class="rowCheckbox" id="select' + index + '">';
-        row.innerHTML = '<td>' + fila[keyHeader] + '</td><td>' + checkbox + '</td>';
+        var tdKey = document.createElement('td');
+        tdKey.textContent = fila[keyHeader];
+        var tdCheckbox = document.createElement('td');
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'rowCheckbox';
+        checkbox.id = 'select' + index;
+        tdCheckbox.appendChild(checkbox);
+        row.appendChild(tdKey);
+        row.appendChild(tdCheckbox);
         tbody.appendChild(row);
       });
     }
