@@ -302,9 +302,9 @@
 
   <h2>Enviament massiu de correus</h2>
 
-  <!-- Section 1: Sheet Selection -->
+  <!-- Section: Sheet Selection -->
   <div class="section">
-    <h3>1. Selecciona la pestanya</h3>
+    <h3>Selecciona la pestanya</h3>
     <label for="sheetSelect">Pestanya:</label>
     <select id="sheetSelect">
       <option value="">--Selecciona una pestanya--</option>
@@ -316,9 +316,35 @@
     <button onclick="loadSheetHeaders()">Carregar capçaleres</button>
   </div>
 
-  <!-- Section 2: Email Body -->
+  <!-- Section: Key Header Selection -->
+  <div class="section" id="keyHeaderSection" style="display:none;">
+    <h3>Selecciona la columna clau</h3>
+    <p class="info-text">Tria la columna que identifica cada fila (per exemple, nom de l'alumne)</p>
+    <label for="keyHeaderSelect">Columna clau:</label>
+    <select id="keyHeaderSelect">
+      <option value="">--Selecciona una capçalera--</option>
+    </select>
+    
+    <button onclick="loadRowsForSelection()">Següent: Selecciona files</button>
+  </div>
+
+  <!-- Section: Row Selection -->
+  <div class="section" id="selectRowsSection" style="display:none;">
+    <h3>Selecciona files</h3>
+    <p class="info-text">Marca les files per les quals vols enviar correus</p>
+    <div class="checkbox-list" id="selectRowsList">
+      <table id="selectRowsTable">
+        <thead id="selectRowsTableHead">
+        </thead>
+        <tbody id="selectRowsTableBody"></tbody>
+      </table>
+    </div>
+    <button onclick="proceedToEmailBody()">Següent: Cos del correu</button>
+  </div>
+
+  <!-- Section: Email Body -->
   <div class="section" id="emailBodySection" style="display:none;">
-    <h3>2. Cos del correu</h3>
+    <h3>Cos del correu</h3>
     <p class="info-text">Els destinataris s'obtenen de la columna <strong>EMAIL</strong> (obligatòria). 
     Opcionalment pots afegir <strong>EMAIL_CC</strong>, <strong>EMAIL_BCC</strong>, <strong>REPLY_TO</strong> i/o <strong>SENDER_NAME</strong>. 
     Pots indicar múltiples emails separats per comes (,) o punt i coma (;).</p>
@@ -332,9 +358,9 @@
     <button onclick="loadTagMapping()">Següent: Mapeja tags</button>
   </div>
 
-  <!-- Section 3: Tag Mapping -->
+  <!-- Section: Tag Mapping -->
   <div class="section" id="tagMappingSection" style="display:none;">
-    <h3>3. Mapeja tags amb capçaleres</h3>
+    <h3>Mapeja tags amb capçaleres</h3>
     <div id="tagMappingContainer">
       <table id="tagMappingTable">
         <thead>
@@ -349,9 +375,9 @@
     </div>
   </div>
 
-  <!-- Section 4: Attachments -->
+  <!-- Section: Attachments -->
   <div class="section" id="attachmentsSection" style="display:none;">
-    <h3>4. Adjunts (opcional)</h3>
+    <h3>Adjunts (opcional)</h3>
     <div class="collapsible-header" onclick="toggleAttachments()">
       Selecció d'adjunts
     </div>
@@ -362,9 +388,9 @@
     </div>
   </div>
 
-  <!-- Section 5: Scheduling -->
+  <!-- Section: Scheduling -->
   <div class="section" id="schedulingSection" style="display:none;">
-    <h3>5. Programació d'enviament</h3>
+    <h3>Programació d'enviament</h3>
     <p class="info-text">Per defecte, els correus s'enviaran immediatament</p>
     
     <div class="schedule-options">
@@ -386,9 +412,9 @@
     </div>
   </div>
 
-  <!-- Section 6: Send -->
+  <!-- Section: Send -->
   <div class="section" id="sendSection" style="display:none;">
-    <h3>6. Enviar correus</h3>
+    <h3>Enviar correus</h3>
     <p class="info-text">Revisa la configuració abans d'enviar</p>
     <div class="button-container">
       <button onclick="sendMassEmails()" style="background-color: #f44336;">
@@ -433,10 +459,9 @@
             return;
           }
           
+          buildKeyHeaderSelect(headers);
           populateAttachmentColumnsList(headers);
-          document.getElementById('emailBodySection').style.display = 'block';
-          document.getElementById('attachmentsSection').style.display = 'block';
-          document.getElementById('schedulingSection').style.display = 'block';
+          document.getElementById('keyHeaderSection').style.display = 'block';
           showLoading(false);
         })
         .withFailureHandler(function(error) {
@@ -444,6 +469,97 @@
           showLoading(false);
         })
         .carregarCapcaleres(sheetName, parseInt(headerRowIndex));
+    }
+
+    function buildKeyHeaderSelect(headers) {
+      var select = document.getElementById('keyHeaderSelect');
+      select.innerHTML = '<option value="">--Selecciona una capçalera--</option>';
+      headers.forEach(function(header) {
+        var option = document.createElement('option');
+        option.value = header;
+        option.text = header;
+        select.appendChild(option);
+      });
+    }
+
+    function loadRowsForSelection() {
+      var keyHeader = document.getElementById('keyHeaderSelect').value;
+      
+      if (!keyHeader) {
+        showWarning('Selecciona una columna clau primer');
+        return;
+      }
+
+      showLoading(true);
+      google.script.run
+        .withSuccessHandler(function(keyValues) {
+          displayRowSelection(keyValues, keyHeader);
+          document.getElementById('selectRowsSection').style.display = 'block';
+          showLoading(false);
+        })
+        .withFailureHandler(function(error) {
+          showWarning('Error carregant files: ' + error.message);
+          showLoading(false);
+        })
+        .carregarDadesPestanyaEmail(document.getElementById('sheetSelect').value, keyHeader, parseInt(document.getElementById('headerRowIndex').value));
+    }
+
+    function displayRowSelection(keyValues, keyHeader) {
+      var thead = document.getElementById('selectRowsTableHead');
+      var tbody = document.getElementById('selectRowsTableBody');
+      
+      thead.innerHTML = '';
+      tbody.innerHTML = '';
+
+      // Add header row with select all checkbox
+      var headerRow = document.createElement('tr');
+      var thKeyHeader = document.createElement('th');
+      thKeyHeader.textContent = keyHeader;
+      var thCheckbox = document.createElement('th');
+      var selectAllCheckbox = document.createElement('input');
+      selectAllCheckbox.type = 'checkbox';
+      selectAllCheckbox.id = 'selectAll';
+      selectAllCheckbox.onclick = function() { toggleSelectAll(this); };
+      thCheckbox.appendChild(selectAllCheckbox);
+      headerRow.appendChild(thKeyHeader);
+      headerRow.appendChild(thCheckbox);
+      thead.appendChild(headerRow);
+
+      // Add data rows
+      keyValues.forEach(function(fila, index) {
+        var row = document.createElement('tr');
+        var tdKey = document.createElement('td');
+        tdKey.textContent = fila[keyHeader];
+        var tdCheckbox = document.createElement('td');
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'rowCheckbox';
+        checkbox.id = 'select' + index;
+        tdCheckbox.appendChild(checkbox);
+        row.appendChild(tdKey);
+        row.appendChild(tdCheckbox);
+        tbody.appendChild(row);
+      });
+    }
+
+    function toggleSelectAll(selectAllCheckbox) {
+      var checkboxes = document.querySelectorAll('.rowCheckbox');
+      checkboxes.forEach(function(checkbox) {
+        checkbox.checked = selectAllCheckbox.checked;
+      });
+    }
+
+    function proceedToEmailBody() {
+      // Count selected rows
+      var checkboxes = document.querySelectorAll('.rowCheckbox:checked');
+      
+      if (checkboxes.length === 0) {
+        showWarning('Selecciona almenys una fila');
+        return;
+      }
+
+      // Show email body section
+      document.getElementById('emailBodySection').style.display = 'block';
     }
 
 
@@ -582,6 +698,8 @@
         document.getElementById('tagMappingSection').style.display = 'block';
       }
 
+      document.getElementById('attachmentsSection').style.display = 'block';
+      document.getElementById('schedulingSection').style.display = 'block';
       document.getElementById('sendSection').style.display = 'block';
     }
 
@@ -591,9 +709,26 @@
       var headerRowIndex = parseInt(document.getElementById('headerRowIndex').value);
       var emailSubject = document.getElementById('emailSubject').value;
       var emailBody = document.getElementById('emailBody').value;
+      var keyHeader = document.getElementById('keyHeaderSelect').value;
 
-      if (!sheetName || !emailSubject.trim() || !emailBody.trim()) {
+      if (!sheetName || !emailSubject.trim() || !emailBody.trim() || !keyHeader) {
         showWarning('Omple tots els camps obligatoris');
+        return;
+      }
+
+      // Get selected rows
+      var selectedRows = [];
+      var rows = document.querySelectorAll('#selectRowsTableBody tr');
+      rows.forEach(function(row, index) {
+        var checkbox = document.getElementById('select' + index);
+        if (checkbox && checkbox.checked) {
+          var keyValue = row.cells[0].textContent;
+          selectedRows.push(keyValue);
+        }
+      });
+
+      if (selectedRows.length === 0) {
+        showWarning('Selecciona almenys una fila per enviar');
         return;
       }
 
@@ -641,7 +776,9 @@
         body: emailBody,
         tagMapping: tagMapping,
         attachmentColumns: attachmentColumns,
-        scheduleInfo: scheduleInfo
+        scheduleInfo: scheduleInfo,
+        keyHeader: keyHeader,
+        selectedRows: selectedRows
       };
 
       if (confirm('Estàs segur que vols enviar els correus?')) {

@@ -48,31 +48,46 @@ function showSheet(sheetName) {
   }
 }
 
-// Funció per carregar les dades de la pestanya seleccionada
-function carregarDadesPestanya(keyHeader) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var full = ss.getActiveSheet(); // Pots modificar-ho per carregar un altre full específic
-  var dades = full.getDataRange().getValues(); // Obté totes les dades del full
-
-  // Troba la columna "keyHeader"
-  const headerRowIndex = parseInt(PropertiesService.getScriptProperties().getProperty("HEADER_ROW_INDEX"));
-  var headers = dades[headerRowIndex-1];
+// Helper function to load row data based on key header
+function carregarDadesPestanyaHelper(sheet, keyHeader, headerRowIndex) {
+  var dades = sheet.getDataRange().getValues();
+  var headers = dades[headerRowIndex - 1];
   var headerColIndex = headers.indexOf(keyHeader);
 
   if (headerColIndex === -1) {
-    throw new Error('No s\'ha trobat la columna "'+keyHeader+'".');
+    throw new Error('No s\'ha trobat la columna "' + keyHeader + '".');
   }
 
-  // Extreu les dades de la columna "mianHeader"
+  // Extreu les dades de la columna keyHeader
   var keyValues = [];
-  var lastIndex = dades.length;//-headerRowIndex+1;
-  for (var i = headerRowIndex; i < lastIndex; i++) {
+  for (var i = headerRowIndex; i < dades.length; i++) {
     var fila = {};
-    fila[keyHeader] = dades[i][headerColIndex]; // TODO: revisar això que sembla una liada absurda, pq no desar el valor de la keyHeader i ja???
+    fila[keyHeader] = dades[i][headerColIndex];
     keyValues.push(fila);
   }
 
-  return keyValues; // Retorna els keyValues per a la taula de selecció
+  return keyValues;
+}
+
+// Funció per carregar les dades de la pestanya seleccionada
+function carregarDadesPestanya(keyHeader) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var full = ss.getActiveSheet();
+  const headerRowIndex = parseInt(PropertiesService.getScriptProperties().getProperty("HEADER_ROW_INDEX"));
+  
+  return carregarDadesPestanyaHelper(full, keyHeader, headerRowIndex);
+}
+
+// Funció per carregar les dades de la pestanya especificada per a enviament massiu
+function carregarDadesPestanyaEmail(sheetName, keyHeader, headerRowIndex) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var full = ss.getSheetByName(sheetName);
+  
+  if (!full) {
+    throw new Error('No s\'ha trobat la pestanya "' + sheetName + '".');
+  }
+  
+  return carregarDadesPestanyaHelper(full, keyHeader, headerRowIndex);
 }
 
 function obtenirDadesBy(sheet,keyValue,searchHeader) {

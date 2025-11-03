@@ -21,9 +21,32 @@ function checkEmailQuotas(config) {
     
     // Count emails to send
     var emailCount = 0;
-    for (var i = config.headerRowIndex; i < data.length; i++) {
-      if (data[i][emailColumnIndex]) {
-        emailCount++;
+    
+    // If selectedRows is specified, count only those rows
+    if (config.selectedRows && config.selectedRows.length > 0) {
+      var keyHeaderIndex = headers.indexOf(config.keyHeader);
+      if (keyHeaderIndex === -1) {
+        throw new Error('No s\'ha trobat la columna clau: ' + config.keyHeader);
+      }
+      
+      // Use Set for O(1) lookup performance
+      var selectedRowsSet = {};
+      for (var j = 0; j < config.selectedRows.length; j++) {
+        selectedRowsSet[config.selectedRows[j]] = true;
+      }
+      
+      for (var i = config.headerRowIndex; i < data.length; i++) {
+        var keyValue = data[i][keyHeaderIndex];
+        if (selectedRowsSet[keyValue] && data[i][emailColumnIndex]) {
+          emailCount++;
+        }
+      }
+    } else {
+      // Count all rows with email
+      for (var i = config.headerRowIndex; i < data.length; i++) {
+        if (data[i][emailColumnIndex]) {
+          emailCount++;
+        }
       }
     }
     
@@ -177,9 +200,25 @@ function sendMassEmailsNow(config) {
     var emailBccColumnIndex = headers.indexOf('EMAIL_BCC');
     var replyToColumnIndex = headers.indexOf('REPLY_TO');
     var senderNameColumnIndex = headers.indexOf('SENDER_NAME');
+    var keyHeaderIndex = -1;
     
     if (emailColumnIndex === -1) {
       throw new Error('Columna EMAIL no trobada. Cal una columna amb el nom exacte "EMAIL"');
+    }
+
+    // Find key header index if selectedRows is specified
+    var selectedRowsSet = null;
+    if (config.selectedRows && config.selectedRows.length > 0) {
+      keyHeaderIndex = headers.indexOf(config.keyHeader);
+      if (keyHeaderIndex === -1) {
+        throw new Error('Columna clau no trobada: ' + config.keyHeader);
+      }
+      
+      // Create object for O(1) lookup performance
+      selectedRowsSet = {};
+      for (var j = 0; j < config.selectedRows.length; j++) {
+        selectedRowsSet[config.selectedRows[j]] = true;
+      }
     }
 
     // Find or create log column
@@ -217,6 +256,15 @@ function sendMassEmailsNow(config) {
 
     for (var i = config.headerRowIndex; i < data.length; i++) {
       var row = data[i];
+      
+      // Skip row if selectedRows is specified and this row is not selected
+      if (selectedRowsSet) {
+        var keyValue = row[keyHeaderIndex];
+        if (!selectedRowsSet[keyValue]) {
+          continue; // Skip this row
+        }
+      }
+      
       var emailValue = row[emailColumnIndex];
       
       if (!emailValue || !String(emailValue).trim()) {
