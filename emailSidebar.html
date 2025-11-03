@@ -302,9 +302,9 @@
 
   <h2>Enviament massiu de correus</h2>
 
-  <!-- Section 1: Sheet Selection -->
+  <!-- Section: Sheet Selection -->
   <div class="section">
-    <h3>1. Selecciona la pestanya</h3>
+    <h3>Selecciona la pestanya</h3>
     <label for="sheetSelect">Pestanya:</label>
     <select id="sheetSelect">
       <option value="">--Selecciona una pestanya--</option>
@@ -316,9 +316,9 @@
     <button onclick="loadSheetHeaders()">Carregar capçaleres</button>
   </div>
 
-  <!-- Section 2: Key Header Selection -->
+  <!-- Section: Key Header Selection -->
   <div class="section" id="keyHeaderSection" style="display:none;">
-    <h3>2. Selecciona la columna clau</h3>
+    <h3>Selecciona la columna clau</h3>
     <p class="info-text">Tria la columna que identifica cada fila (per exemple, nom de l'alumne)</p>
     <label for="keyHeaderSelect">Columna clau:</label>
     <select id="keyHeaderSelect">
@@ -328,9 +328,9 @@
     <button onclick="loadRowsForSelection()">Següent: Selecciona files</button>
   </div>
 
-  <!-- Section 3: Row Selection -->
+  <!-- Section: Row Selection -->
   <div class="section" id="selectRowsSection" style="display:none;">
-    <h3>3. Selecciona files</h3>
+    <h3>Selecciona files</h3>
     <p class="info-text">Marca les files per les quals vols enviar correus</p>
     <div class="checkbox-list" id="selectRowsList">
       <table id="selectRowsTable">
@@ -342,9 +342,9 @@
     <button onclick="proceedToEmailBody()">Següent: Cos del correu</button>
   </div>
 
-  <!-- Section 4: Email Body -->
+  <!-- Section: Email Body -->
   <div class="section" id="emailBodySection" style="display:none;">
-    <h3>4. Cos del correu</h3>
+    <h3>Cos del correu</h3>
     <p class="info-text">Els destinataris s'obtenen de la columna <strong>EMAIL</strong> (obligatòria). 
     Opcionalment pots afegir <strong>EMAIL_CC</strong>, <strong>EMAIL_BCC</strong>, <strong>REPLY_TO</strong> i/o <strong>SENDER_NAME</strong>. 
     Pots indicar múltiples emails separats per comes (,) o punt i coma (;).</p>
@@ -358,9 +358,9 @@
     <button onclick="loadTagMapping()">Següent: Mapeja tags</button>
   </div>
 
-  <!-- Section 5: Tag Mapping -->
+  <!-- Section: Tag Mapping -->
   <div class="section" id="tagMappingSection" style="display:none;">
-    <h3>5. Mapeja tags amb capçaleres</h3>
+    <h3>Mapeja tags amb capçaleres</h3>
     <div id="tagMappingContainer">
       <table id="tagMappingTable">
         <thead>
@@ -375,9 +375,9 @@
     </div>
   </div>
 
-  <!-- Section 6: Attachments -->
+  <!-- Section: Attachments -->
   <div class="section" id="attachmentsSection" style="display:none;">
-    <h3>6. Adjunts (opcional)</h3>
+    <h3>Adjunts (opcional)</h3>
     <div class="collapsible-header" onclick="toggleAttachments()">
       Selecció d'adjunts
     </div>
@@ -388,9 +388,9 @@
     </div>
   </div>
 
-  <!-- Section 7: Scheduling -->
+  <!-- Section: Scheduling -->
   <div class="section" id="schedulingSection" style="display:none;">
-    <h3>7. Programació d'enviament</h3>
+    <h3>Programació d'enviament</h3>
     <p class="info-text">Per defecte, els correus s'enviaran immediatament</p>
     
     <div class="schedule-options">
@@ -412,9 +412,9 @@
     </div>
   </div>
 
-  <!-- Section 8: Send -->
+  <!-- Section: Send -->
   <div class="section" id="sendSection" style="display:none;">
-    <h3>8. Enviar correus</h3>
+    <h3>Enviar correus</h3>
     <p class="info-text">Revisa la configuració abans d'enviar</p>
     <div class="button-container">
       <button onclick="sendMassEmails()" style="background-color: #f44336;">
@@ -462,8 +462,6 @@
           buildKeyHeaderSelect(headers);
           populateAttachmentColumnsList(headers);
           document.getElementById('keyHeaderSection').style.display = 'block';
-          document.getElementById('attachmentsSection').style.display = 'block';
-          document.getElementById('schedulingSection').style.display = 'block';
           showLoading(false);
         })
         .withFailureHandler(function(error) {
@@ -700,6 +698,8 @@
         document.getElementById('tagMappingSection').style.display = 'block';
       }
 
+      document.getElementById('attachmentsSection').style.display = 'block';
+      document.getElementById('schedulingSection').style.display = 'block';
       document.getElementById('sendSection').style.display = 'block';
     }
 
