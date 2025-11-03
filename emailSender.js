@@ -29,9 +29,15 @@ function checkEmailQuotas(config) {
         throw new Error('No s\'ha trobat la columna clau: ' + config.keyHeader);
       }
       
+      // Use Set for O(1) lookup performance
+      var selectedRowsSet = {};
+      for (var j = 0; j < config.selectedRows.length; j++) {
+        selectedRowsSet[config.selectedRows[j]] = true;
+      }
+      
       for (var i = config.headerRowIndex; i < data.length; i++) {
         var keyValue = data[i][keyHeaderIndex];
-        if (config.selectedRows.indexOf(keyValue) !== -1 && data[i][emailColumnIndex]) {
+        if (selectedRowsSet[keyValue] && data[i][emailColumnIndex]) {
           emailCount++;
         }
       }
@@ -201,10 +207,17 @@ function sendMassEmailsNow(config) {
     }
 
     // Find key header index if selectedRows is specified
+    var selectedRowsSet = null;
     if (config.selectedRows && config.selectedRows.length > 0) {
       keyHeaderIndex = headers.indexOf(config.keyHeader);
       if (keyHeaderIndex === -1) {
         throw new Error('Columna clau no trobada: ' + config.keyHeader);
+      }
+      
+      // Create object for O(1) lookup performance
+      selectedRowsSet = {};
+      for (var j = 0; j < config.selectedRows.length; j++) {
+        selectedRowsSet[config.selectedRows[j]] = true;
       }
     }
 
@@ -245,9 +258,9 @@ function sendMassEmailsNow(config) {
       var row = data[i];
       
       // Skip row if selectedRows is specified and this row is not selected
-      if (config.selectedRows && config.selectedRows.length > 0) {
+      if (selectedRowsSet) {
         var keyValue = row[keyHeaderIndex];
-        if (config.selectedRows.indexOf(keyValue) === -1) {
+        if (!selectedRowsSet[keyValue]) {
           continue; // Skip this row
         }
       }

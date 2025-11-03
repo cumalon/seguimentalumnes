@@ -426,7 +426,6 @@
   <script>
     var availableHeaders = [];
     var emailTags = [];
-    var selectedRowIndices = []; // Store selected row indices
 
     function initEmailSidebar(data) {
       var select = document.getElementById('sheetSelect');
@@ -538,11 +537,9 @@
 
     function proceedToEmailBody() {
       // Count selected rows
-      var selectedCount = 0;
       var checkboxes = document.querySelectorAll('.rowCheckbox:checked');
-      selectedCount = checkboxes.length;
       
-      if (selectedCount === 0) {
+      if (checkboxes.length === 0) {
         showWarning('Selecciona almenys una fila');
         return;
       }
